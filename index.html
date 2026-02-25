@@ -16,18 +16,41 @@
       --shadow:0 18px 60px rgba(0,0,0,.45);
       --mono: ui-monospace,SFMono-Regular,Menlo,Monaco,Consolas,monospace;
       --sans: ui-sans-serif,system-ui,-apple-system,"Segoe UI",Roboto,Helvetica,Arial;
+
+      /* ===== BACKGROUND IMAGE PLACEHOLDER =====
+         Cách dùng:
+         - Bỏ 1 ảnh vào cùng thư mục, ví dụ: bg.jpg
+         - Đổi đường dẫn: url("bg.jpg")
+         - Nếu chưa có ảnh -> để NONE (mặc định vẫn chạy gradient)
+      */
+      --bg-image: none; /* ví dụ: url("bg.jpg") */
     }
+
     *{box-sizing:border-box}
     body{
       margin:0; font-family:var(--sans); color:var(--text);
+
+      /* Ưu tiên hình nền nếu bạn set --bg-image, nếu không thì chỉ có gradient */
       background:
+        var(--bg-image) center/cover no-repeat fixed,
         radial-gradient(1200px 800px at 30% 10%, rgba(255,216,107,.22), transparent 60%),
         radial-gradient(1200px 800px at 75% 30%, rgba(255,0,0,.12), transparent 60%),
         linear-gradient(180deg, var(--bg1), #480409 55%, var(--bg2));
+
       min-height:100vh;
       padding:18px;
       display:flex; justify-content:center;
     }
+
+    /* lớp phủ để chữ nổi trên ảnh nền (khi bạn dùng bg.jpg) */
+    body::before{
+      content:"";
+      position:fixed; inset:0;
+      background: linear-gradient(180deg, rgba(0,0,0,.35), rgba(0,0,0,.55));
+      pointer-events:none;
+      z-index:-1;
+    }
+
     .frame{
       width:min(1280px,100%);
       border:3px solid rgba(255,208,90,.55);
@@ -35,6 +58,7 @@
       box-shadow:var(--shadow);
       background:linear-gradient(180deg, rgba(0,0,0,.18), rgba(0,0,0,.08));
       overflow:hidden;
+      backdrop-filter: blur(2px);
     }
     header{ padding:18px 20px 10px; text-align:center; }
     header h1{
@@ -47,11 +71,11 @@
     }
 
     .content{
-        display:grid;
-        grid-template-columns: 1fr 1.1fr .85fr; /* <-- cột phải hẹp hơn */
-        gap:14px;
-        padding:12px 14px 18px;
-      }
+      display:grid;
+      grid-template-columns: 1fr 1.1fr .85fr;
+      gap:14px;
+      padding:12px 14px 18px;
+    }
     @media (max-width: 1100px){ .content{grid-template-columns:1fr;} }
 
     .card{
@@ -74,15 +98,16 @@
       margin-bottom:8px;
     }
     .pill{
-        font-size:16px;        /* <-- to hơn */
-        padding:10px 12px;     /* <-- dày hơn */
-        border-radius:999px;
-        border:1px solid var(--line);
-        background:rgba(0,0,0,.20);
-        color:rgba(255,255,255,.88);
-        font-family:var(--mono);
-      }
+      font-size:16px;
+      padding:10px 12px;
+      border-radius:999px;
+      border:1px solid var(--line);
+      background:rgba(0,0,0,.20);
+      color:rgba(255,255,255,.88);
+      font-family:var(--mono);
+    }
     .row{display:flex; gap:10px; align-items:center; flex-wrap:wrap}
+
     .btn{
       cursor:pointer;
       border:none;
@@ -135,13 +160,13 @@
       outline:none;
     }
     .digits{
-        display:flex;
-        gap:12px;
-        justify-content:center;
-        flex-wrap:nowrap;      /* <-- CHỐT: không xuống dòng */
-        margin-top:6px;
-        font-family:var(--mono);
-      }
+      display:flex;
+      gap:12px;
+      justify-content:center;
+      flex-wrap:nowrap;
+      margin-top:6px;
+      font-family:var(--mono);
+    }
     .digit{
       width:110px; height:140px;
       border-radius:18px;
@@ -173,9 +198,9 @@
       border:1px solid var(--line);
       background:rgba(0,0,0,.22);
       color:var(--text);
-      padding:14px 14px;     /* <-- to hơn chút */
+      padding:14px 14px;
       font-family:var(--mono);
-      font-size:16px;        /* <-- chữ to hơn */
+      font-size:16px;
       outline:none;
       line-height:1.5;
     }
@@ -324,6 +349,15 @@
             <button class="btn secondary" id="btnCancel" disabled>HỦY</button>
           </div>
 
+          <!-- NEW: toggle nhạc -->
+          <div class="row" style="margin-top:6px;">
+            <label style="display:flex;gap:10px;align-items:center;cursor:pointer;font-family:var(--mono);color:rgba(255,255,255,.85)">
+              <input type="checkbox" id="musicOn" checked />
+              Bật nhạc khi quay
+            </label>
+            <button class="btn secondary" id="btnTestMusic">Test nhạc</button>
+          </div>
+
           <div class="meta" id="metaLine">Còn <span id="statRemain">0</span> vé trong danh sách quay</div>
           <div class="meta">Chốt số tự động: dừng từng số một (mỗi số 5 giây)</div>
         </div>
@@ -368,10 +402,18 @@ Ví dụ:
     </div>
   </div>
 
+  <!-- ===== AUDIO =====
+       Đặt file cùng thư mục:
+       - music.mp3 (nhạc xổ số lúc quay)
+       - win.mp3   (tuỳ chọn: âm thanh chúc mừng)
+  -->
+  <audio id="spinMusic" src="music.mp3" preload="auto" loop></audio>
+  <audio id="winSfx" src="win.mp3" preload="auto"></audio>
+
   <script>
     // ===== Config =====
-    const STOP_DELAY_MS = 5000; // 10s mỗi số dừng (đổi nhanh/chậm tại đây)
-    const ROLL_INTERVAL_MS = 50; // tốc độ nhảy số khi đang quay
+    const STOP_DELAY_MS = 5000;     // mỗi số dừng 5s
+    const ROLL_INTERVAL_MS = 50;    // tốc độ nhảy số
 
     // ===== Utilities =====
     const $ = (id) => document.getElementById(id);
@@ -414,6 +456,32 @@ Ví dụ:
       for(let i=0;i<6;i++){
         digitEls[i].classList.toggle("locked", lockedMask[i] === true);
       }
+    }
+
+    // ===== Audio controls =====
+    function playSpinMusic(){
+      const on = $("musicOn") ? $("musicOn").checked : true;
+      if(!on) return;
+      const a = $("spinMusic");
+      if(!a) return;
+      a.volume = 0.65;
+      // không reset currentTime để test/loop mượt; nhưng khi quay mới thì reset
+      a.currentTime = 0;
+      a.play().catch(()=>{});
+    }
+    function stopSpinMusic(){
+      const a = $("spinMusic");
+      if(!a) return;
+      a.pause();
+      a.currentTime = 0;
+    }
+    function playWinSfx(){
+      const a = $("winSfx");
+      if(!a) return;
+      // nếu bạn không có win.mp3 thì browser sẽ bỏ qua (console có thể báo 404 trên Pages)
+      a.volume = 0.9;
+      a.currentTime = 0;
+      a.play().catch(()=>{});
     }
 
     // ===== State =====
@@ -528,6 +596,7 @@ Ví dụ:
       renderPool();
       renderWinners();
       resetDigitsUI();
+      $("btnSpin").disabled = state.pool.length === 0;
     }
 
     function resetDigitsUI(){
@@ -554,11 +623,15 @@ Ví dụ:
 
       state.cancelRequested = false;
       state.spinning = true;
+
       $("btnSpin").disabled = true;
       $("btnCancel").disabled = false;
       $("prizeSelect").disabled = true;
       $("btnSave").disabled = true;
       $("btnDemo").disabled = true;
+
+      // bật nhạc khi quay
+      playSpinMusic();
 
       // reset lock
       state.lockedMask = [false,false,false,false,false,false];
@@ -606,10 +679,11 @@ Ví dụ:
     function finalizeRound(){
       if(state.cancelRequested) return;
 
-      // stop rolling
+      // stop rolling + stop music
       clearInterval(state.rollTimer);
       state.rollTimer = null;
       clearStopTimeouts();
+      stopSpinMusic();
 
       const key = $("prizeSelect").value;
       const time = nowStr();
@@ -631,6 +705,9 @@ Ví dụ:
       renderPool();
       renderWinners();
 
+      // sfx chúc mừng (tuỳ chọn)
+      playWinSfx();
+
       // show modal
       openModal(key, ticket, time);
 
@@ -648,10 +725,12 @@ Ví dụ:
       state.rollTimer = null;
       clearStopTimeouts();
 
+      stopSpinMusic();
+
       state.spinning = false;
       state.finalTicket = null;
 
-      $("btnSpin").disabled = false;
+      $("btnSpin").disabled = (state.pool.length === 0);
       $("btnCancel").disabled = true;
       $("prizeSelect").disabled = false;
       $("btnSave").disabled = false;
@@ -681,7 +760,7 @@ Ví dụ:
       if(cur !== "G3") moveToNextPrize();
 
       // sẵn sàng quay tiếp nếu còn vé
-      $("btnSpin").disabled = state.pool.length === 0;
+      $("btnSpin").disabled = (state.pool.length === 0);
       $("btnCancel").disabled = true;
       resetDigitsUI();
     }
@@ -708,6 +787,8 @@ Ví dụ:
     function resetAll(){
       if(state.rollTimer) clearInterval(state.rollTimer);
       clearStopTimeouts();
+      stopSpinMusic();
+
       state.spinning = false;
       state.cancelRequested = false;
       state.finalTicket = null;
@@ -715,12 +796,14 @@ Ví dụ:
       state.totalLoaded = 0;
       state.winners = [];
       localStorage.removeItem(LS_KEY);
+
       $("inputTickets").value = "";
       $("btnSpin").disabled = false;
       $("btnCancel").disabled = true;
       $("prizeSelect").disabled = false;
       $("btnSave").disabled = false;
       $("btnDemo").disabled = false;
+
       resetDigitsUI();
       renderPool();
       renderWinners();
@@ -762,11 +845,19 @@ Ví dụ:
 
     $("modalClose").addEventListener("click", onModalClose);
 
+    // Test nhạc (bật/tắt)
+    $("btnTestMusic").addEventListener("click", ()=>{
+      const a = $("spinMusic");
+      if(!a) return;
+      if(a.paused) playSpinMusic();
+      else stopSpinMusic();
+    });
+
     // phím Space = QUAY (chỉ khi không quay)
     window.addEventListener("keydown", (e)=>{
       if(e.code === "Space"){
         e.preventDefault();
-        if(!state.spinning && !$("modalBack").style.display.includes("flex")){
+        if(!state.spinning && $("modalBack").style.display !== "flex"){
           startSpinAutoStop();
         }
       }

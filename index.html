@@ -16,51 +16,48 @@
       --mono: ui-monospace,SFMono-Regular,Menlo,Monaco,Consolas,monospace;
       --sans: ui-sans-serif,system-ui,-apple-system,"Segoe UI",Roboto,Helvetica,Arial;
 
-      /* background */
       --bg-image: url("bg.jpg"); /* đặt bg.jpg cùng thư mục */
     }
 
     *{box-sizing:border-box}
-
     body{
       margin:0;
       font-family:var(--sans);
       color:var(--text);
       min-height:100vh;
 
-      /* ảnh nền + lớp tối nhẹ */
       background:
         var(--bg-image) center top/cover no-repeat fixed,
         linear-gradient(180deg, rgba(0,0,0,.12), rgba(0,0,0,.55));
-      padding:18px;
+      padding:14px;
     }
 
-    /* overlay làm tối vùng giữa để chữ/khối nổi hơn */
     body::before{
       content:"";
       position:fixed; inset:0;
       pointer-events:none;
       z-index:-1;
       background:
-        radial-gradient(900px 520px at 50% 45%, rgba(0,0,0,.58), rgba(0,0,0,.10) 65%, rgba(0,0,0,.05) 100%),
-        linear-gradient(180deg, rgba(0,0,0,.08), rgba(0,0,0,.42));
+        radial-gradient(900px 520px at 50% 45%, rgba(0,0,0,.55), rgba(0,0,0,.10) 65%, rgba(0,0,0,.05) 100%),
+        linear-gradient(180deg, rgba(0,0,0,.06), rgba(0,0,0,.38));
     }
 
-    /* ===== CÁCH 2: VIỀN FULL MÀN, NỘI DUNG GIỚI HẠN ===== */
+    /* ===== VIỀN FULL MÀN ===== */
     .outerFrame{
       width:100%;
-      border:2px solid rgba(255,216,107,.35);
+      border:2px solid rgba(255,216,107,.38);
       border-radius:24px;
       box-shadow:var(--shadow);
-      background:linear-gradient(180deg, rgba(0,0,0,.14), rgba(0,0,0,.06));
+      background:linear-gradient(180deg, rgba(0,0,0,.12), rgba(0,0,0,.05));
       overflow:hidden;
       backdrop-filter: blur(2px);
     }
 
+    /* ===== NỘI DUNG CHO NỞ RỘNG HƠN (KHÔNG BÓ 1280) ===== */
     .frame{
-      width:min(1280px, 100%);
-      margin:0 auto;           /* nội dung căn giữa */
-      padding:0;               /* giữ đúng layout cũ */
+      width:100%;
+      max-width:1680px;         /* muốn rộng hơn nữa thì tăng lên 1800/1920 */
+      margin:0 auto;
     }
 
     header{ padding:18px 20px 10px; text-align:center; }
@@ -68,40 +65,48 @@
       margin:0;
       font-weight:900;
       letter-spacing:1px;
-      font-size:36px;
+      font-size:clamp(22px, 2.2vw, 36px);
       color:var(--gold);
       text-shadow:0 10px 35px rgba(0,0,0,.55);
     }
     header p{
       margin:6px 0 0;
-      font-size:18px;
+      font-size:clamp(14px, 1.2vw, 18px);
       color:#7CFF5E;
       font-weight:800;
       letter-spacing:.5px;
       text-shadow:0 8px 25px rgba(0,0,0,.45);
     }
 
+    /* ===== GRID NỞ THEO MÀN ===== */
     .content{
       display:grid;
-      grid-template-columns: 1fr 1.1fr .85fr;
+      grid-template-columns:
+        minmax(340px, 1fr)
+        minmax(520px, 1.35fr)
+        minmax(340px, 0.95fr);
       gap:14px;
       padding:12px 14px 18px;
+      align-items:stretch;
     }
-    @media (max-width: 1100px){
-      body{ padding:10px; }
-      .content{ grid-template-columns:1fr; }
-      .outerFrame{ border-radius:18px; }
+
+    @media (max-width: 1200px){
+      .content{
+        grid-template-columns: 1fr;
+      }
     }
-    @media (max-width: 640px){
+
+    @media (max-width: 720px){
       body{ padding:0; }
       .outerFrame{
         border-radius:0;
         border-left:0;
         border-right:0;
       }
+      .content{ padding:10px; }
     }
 
-    /* ===== CARD “KÍNH” SÁNG HƠN (glass) ===== */
+    /* ===== CARD GLASS ===== */
     .card{
       border:1px solid rgba(255,255,255,.14);
       background:linear-gradient(180deg, rgba(255,255,255,.18), rgba(255,255,255,.07));
@@ -122,16 +127,6 @@
     .topRow{
       display:flex; justify-content:space-between; align-items:center;
       gap:10px; flex-wrap:wrap; margin-bottom:8px;
-    }
-
-    .pill{
-      font-size:15px;
-      padding:10px 12px;
-      border-radius:999px;
-      border:1px solid rgba(255,255,255,.16);
-      background:linear-gradient(180deg, rgba(0,0,0,.18), rgba(0,0,0,.10));
-      color:rgba(255,255,255,.92);
-      font-family:var(--mono);
     }
 
     .row{display:flex; gap:10px; align-items:center; flex-wrap:wrap}
@@ -173,16 +168,22 @@
     .btn:disabled{opacity:.45; cursor:not-allowed}
 
     /* ===== CENTER SPIN ===== */
+    .spinCard{
+      position:relative;
+      isolation:isolate;   /* chống tràn hiệu ứng sang card khác */
+      overflow:hidden;     /* vẫn chặn tràn, nhưng số đã responsive nên không bị cắt nữa */
+    }
+
     .center{
       display:flex;
       flex-direction:column;
       align-items:center;
       gap:12px;
-      padding-top:28px;
+      padding-top:26px;
     }
 
     select{
-      width:min(360px, 100%);
+      width:min(520px, 100%);
       border:2px solid rgba(255,216,107,.35);
       border-radius:12px;
       background:rgba(0,0,0,.18);
@@ -194,37 +195,41 @@
       backdrop-filter: blur(8px);
     }
 
+    /* ===== DIGITS RESPONSIVE: không bị cắt ===== */
     .digits{
       display:flex;
-      gap:12px;
       justify-content:center;
+      align-items:center;
       flex-wrap:nowrap;
+      gap:clamp(8px, 1.0vw, 14px);
       margin-top:6px;
       font-family:var(--mono);
+      width:100%;
+      padding:0 8px;
     }
 
     .digit{
-      width:110px; height:140px;
+      width:clamp(72px, 5.2vw, 110px);
+      height:clamp(96px, 6.2vw, 140px);
       border-radius:18px;
       border:1px solid rgba(255,216,107,.22);
-      background:linear-gradient(180deg, rgba(0,0,0,.20), rgba(0,0,0,.40));
+      background:linear-gradient(180deg, rgba(0,0,0,.20), rgba(0,0,0,.42));
       display:flex; align-items:center; justify-content:center;
-      font-size:86px;
+      font-size:clamp(54px, 4.2vw, 86px);
       font-weight:1000;
       color:var(--gold);
       text-shadow:0 10px 28px rgba(0,0,0,.55);
       box-shadow:
         0 0 0 1px rgba(255,216,107,.12),
         0 18px 40px rgba(0,0,0,.35);
-      transition: transform .18s ease, filter .18s ease, opacity .18s ease;
+      transition: transform .18s ease, opacity .18s ease;
       opacity:.95;
     }
 
-    /* LOCKED NỔI RÕ HƠN */
     .digit.locked{
       transform: translateY(-3px) scale(1.03);
-      opacity: 1;
-      border: 2px solid rgba(255,216,107,.85);
+      opacity:1;
+      border:2px solid rgba(255,216,107,.88);
       background: linear-gradient(180deg, rgba(255,216,107,.18), rgba(0,0,0,.45));
       box-shadow:
         0 0 0 2px rgba(255,216,107,.22),
@@ -252,11 +257,20 @@
     }
     .hint{margin:8px 0 0; color:var(--muted); font-size:12px}
 
-    /* tránh pill dính list */
-    .pill{ margin-top:10px; margin-bottom:10px; }
+    .pill{
+      font-size:15px;
+      padding:10px 12px;
+      border-radius:999px;
+      border:1px solid rgba(255,255,255,.16);
+      background:linear-gradient(180deg, rgba(0,0,0,.18), rgba(0,0,0,.10));
+      color:rgba(255,255,255,.92);
+      font-family:var(--mono);
+      margin-top:10px;
+      margin-bottom:12px; /* chống dính với list */
+    }
 
     .list{
-      max-height:300px;
+      max-height:320px;
       overflow:auto;
       padding-right:6px;
       margin-top:6px;
@@ -283,7 +297,7 @@
       color:rgba(255,255,255,.88);
     }
 
-    /* ===== TABLE WINNERS (không scroll ngang) ===== */
+    /* ===== TABLE WINNERS ===== */
     .tableWrap{
       margin-top:10px;
       overflow-x:hidden;
@@ -293,7 +307,7 @@
       border-collapse:separate;
       border-spacing:0 8px;
       font-size:13px;
-      table-layout: fixed;   /* ép cột không phá layout */
+      table-layout: fixed;
     }
     th{
       text-align:left;
@@ -358,13 +372,6 @@
       letter-spacing:4px;
     }
     .modal p{margin:0; color:rgba(255,255,255,.84)}
-
-    /* FIX: digits không tràn sang card khác */
-    .spinCard{
-      overflow:hidden;
-      position:relative;
-      isolation:isolate;
-    }
   </style>
 </head>
 
@@ -377,7 +384,7 @@
       </header>
 
       <div class="content">
-        <!-- LEFT: WINNERS -->
+        <!-- LEFT -->
         <section class="card">
           <div class="topRow">
             <h3 style="margin:0">Danh sách trúng thưởng</h3>
@@ -403,7 +410,7 @@
           </div>
         </section>
 
-        <!-- CENTER: SPIN -->
+        <!-- CENTER -->
         <section class="card spinCard">
           <div class="center">
             <h3 style="margin:0">Mã vé trúng thưởng</h3>
@@ -435,7 +442,7 @@
           </div>
         </section>
 
-        <!-- RIGHT: INPUT + POOL -->
+        <!-- RIGHT -->
         <section class="card">
           <div class="topRow">
             <h3 style="margin:0">Danh sách vé tham gia</h3>
@@ -480,11 +487,9 @@ Ví dụ:
   <audio id="winSfx" src="win.mp3" preload="auto"></audio>
 
   <script>
-    // ===== Config =====
-    const STOP_DELAY_MS = 5000;     // mỗi số dừng 5s
-    const ROLL_INTERVAL_MS = 50;    // tốc độ nhảy số
+    const STOP_DELAY_MS = 5000;
+    const ROLL_INTERVAL_MS = 50;
 
-    // ===== Utilities =====
     const $ = (id) => document.getElementById(id);
     const LS_KEY = "lottery_ticket_pool_v2_tannien2026";
 
@@ -533,7 +538,6 @@ Ví dụ:
       }
     }
 
-    // ===== Audio =====
     function playSpinMusic(){
       const on = $("musicOn") ? $("musicOn").checked : true;
       if(!on) return;
@@ -557,16 +561,13 @@ Ví dụ:
       a.play().catch(()=>{});
     }
 
-    // ===== State =====
     const state = {
       pool: [],
       totalLoaded: 0,
       winners: [],
-
       spinning: false,
       rollTimer: null,
       previewTicket: "000000",
-
       finalTicket: null,
       lockedMask: [false,false,false,false,false,false],
       stopTimeouts: [],
@@ -580,7 +581,6 @@ Ví dụ:
         winners: state.winners
       }));
     }
-
     function load(){
       const raw = localStorage.getItem(LS_KEY);
       if(!raw) return;
@@ -592,7 +592,6 @@ Ví dụ:
       }catch(e){}
     }
 
-    // ===== Render =====
     function renderPool(){
       $("statTotal").textContent = state.totalLoaded;
       $("statRemain").textContent = state.pool.length;
@@ -625,14 +624,13 @@ Ví dụ:
       $("winnerEmpty").style.display = state.winners.length ? "none" : "block";
 
       const prizeRank = { G1: 1, G2: 2, G3: 3 };
-
       const list = state.winners
         .map((w, idx) => ({ ...w, __idx: idx }))
         .sort((a, b) => {
           const ra = prizeRank[a.prizeKey] ?? 99;
           const rb = prizeRank[b.prizeKey] ?? 99;
           if(ra !== rb) return ra - rb;
-          return b.__idx - a.__idx; // cùng giải: mới nhất trước
+          return b.__idx - a.__idx;
         });
 
       list.forEach((w)=>{
@@ -656,7 +654,6 @@ Ví dụ:
       });
     }
 
-    // ===== Modal =====
     function openModal(prizeKey, ticket, time){
       $("modalTitle").textContent = `🎉 Chúc mừng ${prizeLabel(prizeKey)}!`;
       $("modalSub").textContent = "Tiệc Tân Niên 2026";
@@ -666,7 +663,6 @@ Ví dụ:
     }
     function closeModal(){ $("modalBack").style.display = "none"; }
 
-    // ===== Actions =====
     function saveTicketsFromTextarea(){
       if(state.spinning) return;
 
@@ -729,10 +725,10 @@ Ví dụ:
         setDigitsFromStr(state.previewTicket);
       }, ROLL_INTERVAL_MS);
 
-      // DỪNG TỪ SỐ 6 -> SỐ 1 (index 5 -> 0)
+      // dừng từ số 6 -> số 1
       clearStopTimeouts();
       for(let step = 0; step < 6; step++){
-        const idx = 5 - step; // 5,4,3,2,1,0
+        const idx = 5 - step;
         const t = setTimeout(()=>{
           if(state.cancelRequested) return;
 
@@ -748,7 +744,6 @@ Ví dụ:
             finalizeRound();
           }
         }, STOP_DELAY_MS * (step + 1));
-
         state.stopTimeouts.push(t);
       }
     }
@@ -887,7 +882,6 @@ Ví dụ:
       URL.revokeObjectURL(a.href);
     }
 
-    // ===== Wire up =====
     $("btnSave").addEventListener("click", saveTicketsFromTextarea);
     $("btnSpin").addEventListener("click", startSpinAutoStop);
     $("btnCancel").addEventListener("click", cancelSpin);
@@ -923,7 +917,6 @@ Ví dụ:
       }
     });
 
-    // ===== Init =====
     load();
     renderPool();
     renderWinners();

@@ -6,47 +6,50 @@
   <title>Tiệc Tân Niên 2026 - Vòng quay may mắn</title>
   <style>
     :root{
+      --bg1:#7a0b10; --bg2:#2a0206;
       --text:rgba(255,255,255,.92);
-      --muted:rgba(255,255,255,.70);
+      --muted:rgba(255,255,255,.72);
+      --line:rgba(255,255,255,.16);
       --gold:#ffd86b;
       --danger:#ff4d4d;
       --shadow:0 18px 60px rgba(0,0,0,.45);
       --mono: ui-monospace,SFMono-Regular,Menlo,Monaco,Consolas,monospace;
       --sans: ui-sans-serif,system-ui,-apple-system,"Segoe UI",Roboto,Helvetica,Arial;
 
-      --bg-image: url("bg.jpg");
-
-      --glass1: rgba(255,255,255,.18);
-      --glass2: rgba(255,255,255,.08);
-      --glassBorder: rgba(255,255,255,.22);
-      --glassShadow: 0 18px 50px rgba(0,0,0,.35);
+      /* background */
+      --bg-image: url("bg.jpg"); /* đặt bg.jpg cùng thư mục */
     }
 
     *{box-sizing:border-box}
 
     body{
-      margin:0; font-family:var(--sans); color:var(--text);
-      background:
-        var(--bg-image) center top / cover no-repeat fixed,
-        linear-gradient(180deg, rgba(0,0,0,.15), rgba(0,0,0,.55));
+      margin:0;
+      font-family:var(--sans);
+      color:var(--text);
       min-height:100vh;
+
+      /* ảnh nền + lớp tối nhẹ */
+      background:
+        var(--bg-image) center top/cover no-repeat fixed,
+        linear-gradient(180deg, rgba(0,0,0,.12), rgba(0,0,0,.55));
       padding:18px;
-      display:flex; justify-content:center;
     }
 
+    /* overlay làm tối vùng giữa để chữ/khối nổi hơn */
     body::before{
       content:"";
       position:fixed; inset:0;
       pointer-events:none;
       z-index:-1;
       background:
-        radial-gradient(900px 520px at 50% 45%, rgba(0,0,0,.58), rgba(0,0,0,.12) 65%, rgba(0,0,0,.06) 100%),
-        linear-gradient(180deg, rgba(0,0,0,.10), rgba(0,0,0,.40));
+        radial-gradient(900px 520px at 50% 45%, rgba(0,0,0,.58), rgba(0,0,0,.10) 65%, rgba(0,0,0,.05) 100%),
+        linear-gradient(180deg, rgba(0,0,0,.08), rgba(0,0,0,.42));
     }
 
-    .frame{
-      width:min(1280px,100%);
-      border:2px solid rgba(255,216,107,.30);
+    /* ===== CÁCH 2: VIỀN FULL MÀN, NỘI DUNG GIỚI HẠN ===== */
+    .outerFrame{
+      width:100%;
+      border:2px solid rgba(255,216,107,.35);
       border-radius:24px;
       box-shadow:var(--shadow);
       background:linear-gradient(180deg, rgba(0,0,0,.14), rgba(0,0,0,.06));
@@ -54,13 +57,27 @@
       backdrop-filter: blur(2px);
     }
 
+    .frame{
+      width:min(1280px, 100%);
+      margin:0 auto;           /* nội dung căn giữa */
+      padding:0;               /* giữ đúng layout cũ */
+    }
+
     header{ padding:18px 20px 10px; text-align:center; }
     header h1{
-      margin:0; font-weight:900; letter-spacing:1px; font-size:36px;
-      color:var(--gold); text-shadow:0 10px 35px rgba(0,0,0,.55);
+      margin:0;
+      font-weight:900;
+      letter-spacing:1px;
+      font-size:36px;
+      color:var(--gold);
+      text-shadow:0 10px 35px rgba(0,0,0,.55);
     }
     header p{
-      margin:6px 0 0; font-size:18px; color:#7CFF5E; font-weight:800; letter-spacing:.5px;
+      margin:6px 0 0;
+      font-size:18px;
+      color:#7CFF5E;
+      font-weight:800;
+      letter-spacing:.5px;
       text-shadow:0 8px 25px rgba(0,0,0,.45);
     }
 
@@ -69,26 +86,31 @@
       grid-template-columns: 1fr 1.1fr .85fr;
       gap:14px;
       padding:12px 14px 18px;
-      align-items:stretch;
     }
-    @media (max-width: 1100px){ .content{grid-template-columns:1fr;} }
+    @media (max-width: 1100px){
+      body{ padding:10px; }
+      .content{ grid-template-columns:1fr; }
+      .outerFrame{ border-radius:18px; }
+    }
+    @media (max-width: 640px){
+      body{ padding:0; }
+      .outerFrame{
+        border-radius:0;
+        border-left:0;
+        border-right:0;
+      }
+    }
 
+    /* ===== CARD “KÍNH” SÁNG HƠN (glass) ===== */
     .card{
-      border:1px solid var(--glassBorder);
-      background:
-        linear-gradient(135deg, var(--glass1), var(--glass2)),
-        rgba(0,0,0,.12);
+      border:1px solid rgba(255,255,255,.14);
+      background:linear-gradient(180deg, rgba(255,255,255,.18), rgba(255,255,255,.07));
       border-radius:18px;
-      box-shadow: var(--glassShadow);
-      backdrop-filter: blur(10px);
-      -webkit-backdrop-filter: blur(10px);
+      box-shadow:0 18px 40px rgba(0,0,0,.25);
       padding:14px;
       min-height: 420px;
-
-      /* quan trọng: để các khối bên trong (table/list) co giãn không phá layout */
-      min-width: 0;
+      backdrop-filter: blur(10px);
     }
-
     .card h3{
       margin:0 0 10px;
       font-size:18px;
@@ -98,24 +120,18 @@
     }
 
     .topRow{
-      display:flex; justify-content:space-between; align-items:center; gap:10px; flex-wrap:wrap;
-      margin-bottom:8px;
+      display:flex; justify-content:space-between; align-items:center;
+      gap:10px; flex-wrap:wrap; margin-bottom:8px;
     }
 
     .pill{
-      font-size:16px;
+      font-size:15px;
       padding:10px 12px;
       border-radius:999px;
-      border:1px solid rgba(255,255,255,.20);
-      background: linear-gradient(135deg, rgba(255,255,255,.16), rgba(255,255,255,.06));
-      backdrop-filter: blur(10px);
-      -webkit-backdrop-filter: blur(10px);
+      border:1px solid rgba(255,255,255,.16);
+      background:linear-gradient(180deg, rgba(0,0,0,.18), rgba(0,0,0,.10));
       color:rgba(255,255,255,.92);
       font-family:var(--mono);
-
-      /* FIX #1: tách pill khỏi list */
-      margin-top:10px;
-      margin-bottom:12px;
     }
 
     .row{display:flex; gap:10px; align-items:center; flex-wrap:wrap}
@@ -132,12 +148,10 @@
       box-shadow:0 18px 50px rgba(255,176,0,.20);
       font-size:16px;
       user-select:none;
-      white-space:nowrap;
     }
     .btn:active{transform:scale(.99)}
-
     .btn.secondary{
-      background:rgba(255,255,255,.08);
+      background:rgba(255,255,255,.12);
       color:var(--text);
       border:1px solid rgba(255,255,255,.18);
       box-shadow:none;
@@ -146,11 +160,7 @@
       border-radius:14px;
       font-weight:900;
       letter-spacing:0;
-      backdrop-filter: blur(8px);
-      -webkit-backdrop-filter: blur(8px);
-      white-space:nowrap;
     }
-
     .btn.danger{
       background:linear-gradient(135deg, var(--danger), #ff7aa8);
       color:white;
@@ -159,169 +169,149 @@
       padding:10px 14px;
       border-radius:14px;
       font-weight:900;
-      white-space:nowrap;
     }
-
     .btn:disabled{opacity:.45; cursor:not-allowed}
 
+    /* ===== CENTER SPIN ===== */
     .center{
-      display:flex; flex-direction:column; align-items:center; gap:14px; padding-top:28px;
+      display:flex;
+      flex-direction:column;
+      align-items:center;
+      gap:12px;
+      padding-top:28px;
     }
 
     select{
       width:min(360px, 100%);
-      border:2px solid rgba(255,216,107,.30);
+      border:2px solid rgba(255,216,107,.35);
       border-radius:12px;
-      background:linear-gradient(135deg, rgba(255,255,255,.10), rgba(255,255,255,.04));
+      background:rgba(0,0,0,.18);
       padding:10px 12px;
       color:var(--text);
       font-weight:900;
       font-size:16px;
       outline:none;
-      backdrop-filter: blur(10px);
-      -webkit-backdrop-filter: blur(10px);
+      backdrop-filter: blur(8px);
     }
 
     .digits{
       display:flex;
-      gap:16px;
+      gap:12px;
       justify-content:center;
       flex-wrap:nowrap;
-      margin-top:14px;
+      margin-top:6px;
       font-family:var(--mono);
     }
 
     .digit{
-      flex:0 0 110px;
       width:110px; height:140px;
       border-radius:18px;
       border:1px solid rgba(255,216,107,.22);
-      background:
-        linear-gradient(135deg, rgba(255,255,255,.12), rgba(255,255,255,.04)),
-        rgba(0,0,0,.22);
+      background:linear-gradient(180deg, rgba(0,0,0,.20), rgba(0,0,0,.40));
       display:flex; align-items:center; justify-content:center;
       font-size:86px;
       font-weight:1000;
       color:var(--gold);
       text-shadow:0 10px 28px rgba(0,0,0,.55);
       box-shadow:
-        0 0 0 1px rgba(255,216,107,.10),
-        0 16px 40px rgba(0,0,0,.45);
+        0 0 0 1px rgba(255,216,107,.12),
+        0 18px 40px rgba(0,0,0,.35);
       transition: transform .18s ease, filter .18s ease, opacity .18s ease;
-      opacity:.96;
-      backdrop-filter: blur(10px);
-      -webkit-backdrop-filter: blur(10px);
+      opacity:.95;
     }
 
+    /* LOCKED NỔI RÕ HƠN */
     .digit.locked{
       transform: translateY(-3px) scale(1.03);
       opacity: 1;
-      border: 2px solid rgba(255,216,107,.70);
-      background:
-        linear-gradient(135deg, rgba(255,216,107,.16), rgba(255,255,255,.06)),
-        rgba(0,0,0,.22);
+      border: 2px solid rgba(255,216,107,.85);
+      background: linear-gradient(180deg, rgba(255,216,107,.18), rgba(0,0,0,.45));
       box-shadow:
-        0 0 0 2px rgba(255,216,107,.18),
-        0 18px 60px rgba(0,0,0,.55),
-        0 0 26px rgba(255,216,107,.30);
-      outline: none;
-      filter: none;
+        0 0 0 2px rgba(255,216,107,.22),
+        0 18px 60px rgba(0,0,0,.45),
+        0 0 28px rgba(255,216,107,.38);
     }
 
     .meta{ color:var(--muted); font-size:12px; text-align:center; font-family:var(--mono); }
 
+    /* ===== RIGHT INPUT ===== */
     textarea{
       width:100%;
       min-height:150px;
       resize:vertical;
       border-radius:14px;
       border:1px solid rgba(255,255,255,.18);
-      background: linear-gradient(135deg, rgba(255,255,255,.12), rgba(255,255,255,.04));
+      background:rgba(0,0,0,.14);
       color:var(--text);
       padding:14px 14px;
       font-family:var(--mono);
       font-size:16px;
       outline:none;
       line-height:1.5;
-      backdrop-filter: blur(10px);
-      -webkit-backdrop-filter: blur(10px);
+      backdrop-filter: blur(8px);
     }
-
     .hint{margin:8px 0 0; color:var(--muted); font-size:12px}
 
-    /* FIX #1: list tách rõ khỏi pill, và không “đè” */
+    /* tránh pill dính list */
+    .pill{ margin-top:10px; margin-bottom:10px; }
+
     .list{
-      margin-top:6px;
       max-height:300px;
       overflow:auto;
       padding-right:6px;
+      margin-top:6px;
     }
 
     .item{
       display:flex; justify-content:space-between; align-items:flex-start;
       gap:10px;
       padding:10px 10px;
-      border:1px solid rgba(255,255,255,.18);
+      border:1px solid rgba(255,255,255,.16);
       border-radius:14px;
-      background: linear-gradient(135deg, rgba(255,255,255,.14), rgba(255,255,255,.05));
-      backdrop-filter: blur(10px);
-      -webkit-backdrop-filter: blur(10px);
-      box-shadow: 0 12px 30px rgba(0,0,0,.25);
+      background:rgba(0,0,0,.12);
       margin-bottom:8px;
-      min-width:0;
+      backdrop-filter: blur(10px);
     }
-
     .tag{
       font-family:var(--mono);
       font-size:12px;
       padding:5px 8px;
       border-radius:999px;
-      border:1px solid rgba(255,255,255,.18);
-      background:rgba(0,0,0,.12);
+      border:1px solid rgba(255,255,255,.16);
+      background:rgba(0,0,0,.14);
       white-space:nowrap;
       color:rgba(255,255,255,.88);
-      backdrop-filter: blur(10px);
-      -webkit-backdrop-filter: blur(10px);
     }
 
-    /* ===== FIX #2: TABLE không phá layout ===== */
+    /* ===== TABLE WINNERS (không scroll ngang) ===== */
     .tableWrap{
       margin-top:10px;
-      overflow-x:auto; /* nếu quá hẹp vẫn không làm card bung */
+      overflow-x:hidden;
     }
-
     table{
       width:100%;
       border-collapse:separate;
       border-spacing:0 8px;
       font-size:13px;
-
-      table-layout: fixed;     /* CHỐT: không bung cột */
-      min-width: 520px;        /* cho trường hợp card quá hẹp -> scroll ngang trong tableWrap */
+      table-layout: fixed;   /* ép cột không phá layout */
     }
-
     th{
       text-align:left;
-      color:rgba(255,255,255,.82);
+      color:rgba(255,255,255,.80);
       font-size:12px;
       font-weight:900;
       padding:6px 10px;
-      white-space:nowrap;
     }
-
     td{
       padding:10px 10px;
-      background: linear-gradient(135deg, rgba(255,255,255,.14), rgba(255,255,255,.05));
+      background:rgba(0,0,0,.12);
       border-top:1px solid rgba(255,255,255,.16);
       border-bottom:1px solid rgba(255,255,255,.16);
       font-family:var(--mono);
-      backdrop-filter: blur(10px);
-      -webkit-backdrop-filter: blur(10px);
       overflow:hidden;
       text-overflow:ellipsis;
-      word-break:break-word;
+      white-space:nowrap;
     }
-
     tr td:first-child{
       border-left:1px solid rgba(255,255,255,.16);
       border-top-left-radius:14px;
@@ -332,29 +322,9 @@
       border-top-right-radius:14px;
       border-bottom-right-radius:14px;
     }
-
-    /* cột time hiển thị 2 dòng gọn */
-    .timeCell{
-      line-height:1.25;
-      white-space:normal;
-      font-family:var(--mono);
-      color:rgba(255,255,255,.82);
-    }
-    .timeCell .t1{ display:block; }
-    .timeCell .t2{ display:block; opacity:.9; }
-
-    /* nút xóa trong bảng gọn lại để không đẩy */
-    .btnDel{
-      padding:8px 12px;
-      border-radius:12px;
-      font-size:12px;
-      font-weight:1000;
-      letter-spacing:.2px;
-      min-width:64px;
-    }
-
     .empty{padding:10px; color:var(--muted); font-size:12px}
 
+    /* ===== MODAL ===== */
     .modalBack{
       position:fixed; inset:0;
       background:rgba(0,0,0,.55);
@@ -366,15 +336,12 @@
     .modal{
       width:min(560px, 100%);
       border-radius:22px;
-      border:2px solid rgba(255,216,107,.35);
-      background:
-        linear-gradient(135deg, rgba(255,255,255,.12), rgba(255,255,255,.05)),
-        rgba(0,0,0,.58);
+      border:2px solid rgba(255,216,107,.40);
+      background:linear-gradient(180deg, rgba(25,5,8,.92), rgba(0,0,0,.72));
       box-shadow:0 28px 80px rgba(0,0,0,.6);
       padding:18px;
       text-align:center;
-      backdrop-filter: blur(14px);
-      -webkit-backdrop-filter: blur(14px);
+      backdrop-filter: blur(10px);
     }
     .modal h2{
       margin:6px 0 8px;
@@ -390,103 +357,108 @@
       color:var(--gold);
       letter-spacing:4px;
     }
-    .modal p{margin:0; color:rgba(255,255,255,.82)}
+    .modal p{margin:0; color:rgba(255,255,255,.84)}
+
+    /* FIX: digits không tràn sang card khác */
+    .spinCard{
+      overflow:hidden;
+      position:relative;
+      isolation:isolate;
+    }
   </style>
 </head>
+
 <body>
-  <div class="frame">
-    <header>
-      <div class="headerRow">
-        <div>
-          <h1>VIỆT PHÁP GROUP - TIỆC TÂN NIÊN 2026</h1>
-          <p>VÒNG QUAY MAY MẮN</p>
-        </div>
-      </div>
-    </header>
+  <div class="outerFrame">
+    <div class="frame">
+      <header>
+        <h1>VIỆT PHÁP GROUP - TIỆC TÂN NIÊN 2026</h1>
+        <p>VÒNG QUAY MAY MẮN</p>
+      </header>
 
-    <div class="content">
-      <!-- LEFT: WINNERS TABLE -->
-      <section class="card">
-        <div class="topRow">
-          <h3 style="margin:0">Danh sách trúng thưởng</h3>
-          <div class="row">
-            <button class="btn secondary" id="btnExport">Xuất CSV</button>
-            <button class="btn danger" id="btnReset">Reset</button>
-          </div>
-        </div>
-
-        <div class="tableWrap">
-          <table>
-            <thead>
-              <tr>
-                <th style="width:92px">Giải</th>
-                <th style="width:110px">Vé trúng</th>
-                <th style="width:150px">Thời gian</th>
-                <th style="width:78px; text-align:right">Xóa</th>
-              </tr>
-            </thead>
-            <tbody id="winnerTbody"></tbody>
-          </table>
-        </div>
-
-        <div class="empty" id="winnerEmpty">Chưa có vé trúng.</div>
-      </section>
-
-      <!-- CENTER: SPIN -->
-      <section class="card">
-        <div class="center">
-          <h3 style="margin:0">Mã vé trúng thưởng</h3>
-
-          <select id="prizeSelect">
-            <option value="G1">🏆 Giải nhất</option>
-            <option value="G2">🥈 Giải nhì</option>
-            <option value="G3">🥉 Giải ba</option>
-          </select>
-
-          <div class="digits" id="digits">
-            <div class="digit">0</div><div class="digit">0</div><div class="digit">0</div>
-            <div class="digit">0</div><div class="digit">0</div><div class="digit">0</div>
+      <div class="content">
+        <!-- LEFT: WINNERS -->
+        <section class="card">
+          <div class="topRow">
+            <h3 style="margin:0">Danh sách trúng thưởng</h3>
+            <div class="row">
+              <button class="btn secondary" id="btnExport">Xuất CSV</button>
+              <button class="btn danger" id="btnReset">Reset</button>
+            </div>
           </div>
 
-          <div class="row">
-            <button class="btn" id="btnSpin">QUAY</button>
-            <button class="btn secondary" id="btnCancel" disabled>HỦY</button>
+          <div class="tableWrap">
+            <table>
+              <thead>
+                <tr>
+                  <th style="width:110px">Giải</th>
+                  <th>Vé trúng</th>
+                  <th style="width:150px">Thời gian</th>
+                  <th style="width:80px; text-align:right">Xóa</th>
+                </tr>
+              </thead>
+              <tbody id="winnerTbody"></tbody>
+            </table>
+            <div class="empty" id="winnerEmpty">Chưa có vé trúng.</div>
+          </div>
+        </section>
+
+        <!-- CENTER: SPIN -->
+        <section class="card spinCard">
+          <div class="center">
+            <h3 style="margin:0">Mã vé trúng thưởng</h3>
+
+            <select id="prizeSelect">
+              <option value="G1">🏆 Giải nhất</option>
+              <option value="G2">🥈 Giải nhì</option>
+              <option value="G3">🥉 Giải ba</option>
+            </select>
+
+            <div class="digits" id="digits">
+              <div class="digit">0</div><div class="digit">0</div><div class="digit">0</div>
+              <div class="digit">0</div><div class="digit">0</div><div class="digit">0</div>
+            </div>
+
+            <div class="row">
+              <button class="btn" id="btnSpin">QUAY</button>
+              <button class="btn secondary" id="btnCancel" disabled>HỦY</button>
+            </div>
+
+            <div class="row" style="margin-top:6px;">
+              <label style="display:flex;gap:10px;align-items:center;cursor:pointer;font-family:var(--mono);color:rgba(255,255,255,.88)">
+                <input type="checkbox" id="musicOn" checked />
+                Bật nhạc khi quay
+              </label>
+            </div>
+
+            <div class="meta" id="metaLine">Còn <span id="statRemain">0</span> vé trong danh sách quay</div>
+          </div>
+        </section>
+
+        <!-- RIGHT: INPUT + POOL -->
+        <section class="card">
+          <div class="topRow">
+            <h3 style="margin:0">Danh sách vé tham gia</h3>
+            <div class="row">
+              <button class="btn secondary" id="btnDemo">Demo</button>
+              <button class="btn secondary" id="btnSave">Lưu</button>
+            </div>
           </div>
 
-          <div class="row" style="margin-top:6px;">
-            <label style="display:flex;gap:10px;align-items:center;cursor:pointer;font-family:var(--mono);color:rgba(255,255,255,.85)">
-              <input type="checkbox" id="musicOn" checked />
-              Bật nhạc khi quay
-            </label>
-          </div>
-
-          <div class="meta" id="metaLine">Còn <span id="statRemain">0</span> vé trong danh sách quay</div>
-        </div>
-      </section>
-
-      <!-- RIGHT: INPUT + CURRENT POOL -->
-      <section class="card">
-        <div class="topRow">
-          <h3 style="margin:0">Danh sách vé tham gia</h3>
-          <div class="row">
-            <button class="btn secondary" id="btnDemo">Demo</button>
-            <button class="btn secondary" id="btnSave">Lưu</button>
-          </div>
-        </div>
-
-        <textarea id="inputTickets" placeholder="Mỗi dòng 1 vé (6 số). Có thể nhập thiếu 0, hệ thống tự pad.
+          <textarea id="inputTickets" placeholder="Mỗi dòng 1 vé (6 số). Có thể nhập thiếu 0, hệ thống tự pad.
 Ví dụ:
 168
 001234
 999999
 45"></textarea>
 
-        <p class="hint">Trùng vé sẽ tự loại. Vé đã trúng sẽ bị remove khỏi danh sách quay.</p>
+          <p class="hint">Trùng vé sẽ tự loại. Vé đã trúng sẽ bị remove khỏi danh sách quay.</p>
 
-        <div class="pill">Tổng nạp: <span id="statTotal">0</span> • Còn lại: <span id="statRemain2">0</span></div>
+          <div class="pill">Tổng nạp: <span id="statTotal">0</span> • Còn lại: <span id="statRemain2">0</span></div>
 
-        <div class="list" id="poolList"></div>
-      </section>
+          <div class="list" id="poolList"></div>
+        </section>
+      </div>
     </div>
   </div>
 
@@ -496,7 +468,7 @@ Ví dụ:
       <h2 id="modalTitle">Chúc mừng!</h2>
       <p id="modalSub">Tiệc Tân Niên 2026</p>
       <div class="ticket" id="modalTicket">000000</div>
-      <p id="modalTime" style="margin-top:6px; font-family:var(--mono); color:rgba(255,255,255,.75)"></p>
+      <p id="modalTime" style="margin-top:6px; font-family:var(--mono); color:rgba(255,255,255,.78)"></p>
       <div style="margin-top:14px">
         <button class="btn" id="modalClose">ĐÓNG &amp; QUA GIẢI TIẾP</button>
       </div>
@@ -508,13 +480,17 @@ Ví dụ:
   <audio id="winSfx" src="win.mp3" preload="auto"></audio>
 
   <script>
-    const STOP_DELAY_MS = 5000;
-    const ROLL_INTERVAL_MS = 50;
+    // ===== Config =====
+    const STOP_DELAY_MS = 5000;     // mỗi số dừng 5s
+    const ROLL_INTERVAL_MS = 50;    // tốc độ nhảy số
 
+    // ===== Utilities =====
     const $ = (id) => document.getElementById(id);
     const LS_KEY = "lottery_ticket_pool_v2_tannien2026";
 
     const pad6 = (s) => String(s).replace(/\D/g,"").slice(0,6).padStart(6,"0");
+
+    // hh:mm dd/mm/yyyy
     const nowStr = () => {
       const d = new Date();
       const p = (n)=> String(n).padStart(2,"0");
@@ -526,6 +502,7 @@ Ví dụ:
         "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"
       }[c]));
     }
+
     function parseTickets(text){
       const lines = text.split(/\r?\n/).map(x=>x.trim()).filter(Boolean);
       const out = [];
@@ -540,6 +517,7 @@ Ví dụ:
         return true;
       });
     }
+
     function pickRandom(arr){ return arr[Math.floor(Math.random()*arr.length)]; }
     function prizeLabel(key){ return key === "G1" ? "Giải nhất" : (key === "G2" ? "Giải nhì" : "Giải ba"); }
 
@@ -547,6 +525,7 @@ Ví dụ:
       const digitEls = $("digits").children;
       for(let i=0;i<6;i++) digitEls[i].textContent = str6[i] ?? "0";
     }
+
     function setLockedClasses(lockedMask){
       const digitEls = $("digits").children;
       for(let i=0;i<6;i++){
@@ -554,6 +533,7 @@ Ví dụ:
       }
     }
 
+    // ===== Audio =====
     function playSpinMusic(){
       const on = $("musicOn") ? $("musicOn").checked : true;
       if(!on) return;
@@ -577,13 +557,16 @@ Ví dụ:
       a.play().catch(()=>{});
     }
 
+    // ===== State =====
     const state = {
       pool: [],
       totalLoaded: 0,
       winners: [],
+
       spinning: false,
       rollTimer: null,
       previewTicket: "000000",
+
       finalTicket: null,
       lockedMask: [false,false,false,false,false,false],
       stopTimeouts: [],
@@ -597,6 +580,7 @@ Ví dụ:
         winners: state.winners
       }));
     }
+
     function load(){
       const raw = localStorage.getItem(LS_KEY);
       if(!raw) return;
@@ -608,6 +592,7 @@ Ví dụ:
       }catch(e){}
     }
 
+    // ===== Render =====
     function renderPool(){
       $("statTotal").textContent = state.totalLoaded;
       $("statRemain").textContent = state.pool.length;
@@ -622,7 +607,7 @@ Ví dụ:
       state.pool.slice(0, 400).forEach(t=>{
         const div = document.createElement("div");
         div.className = "item";
-        div.innerHTML = `<div style="min-width:0"><strong style="font-family:var(--mono); font-size:14px">${escapeHtml(t)}</strong></div>
+        div.innerHTML = `<div><strong style="font-family:var(--mono); font-size:14px">${escapeHtml(t)}</strong></div>
                          <div class="tag">${escapeHtml(t)}</div>`;
         wrap.appendChild(div);
       });
@@ -647,25 +632,17 @@ Ví dụ:
           const ra = prizeRank[a.prizeKey] ?? 99;
           const rb = prizeRank[b.prizeKey] ?? 99;
           if(ra !== rb) return ra - rb;
-          return b.__idx - a.__idx;
+          return b.__idx - a.__idx; // cùng giải: mới nhất trước
         });
 
       list.forEach((w)=>{
-        // time đang là "hh:mm dd/mm/yyyy" => tách 2 dòng
-        const parts = String(w.time).split(" ");
-        const t1 = parts[0] || w.time;
-        const t2 = parts.slice(1).join(" ") || "";
-
         const tr = document.createElement("tr");
         tr.innerHTML = `
           <td>${escapeHtml(w.prizeName)}</td>
           <td><b style="color:var(--gold); font-size:14px">${escapeHtml(w.ticket)}</b></td>
-          <td class="timeCell">
-            <span class="t1">${escapeHtml(t1)}</span>
-            <span class="t2">${escapeHtml(t2)}</span>
-          </td>
+          <td style="color:rgba(255,255,255,.80)">${escapeHtml(w.time)}</td>
           <td style="text-align:right">
-            <button class="btn danger btnDel" data-del="${w.__idx}">XÓA</button>
+            <button class="btn danger" data-del="${w.__idx}">XÓA</button>
           </td>
         `;
         tb.appendChild(tr);
@@ -679,6 +656,7 @@ Ví dụ:
       });
     }
 
+    // ===== Modal =====
     function openModal(prizeKey, ticket, time){
       $("modalTitle").textContent = `🎉 Chúc mừng ${prizeLabel(prizeKey)}!`;
       $("modalSub").textContent = "Tiệc Tân Niên 2026";
@@ -688,6 +666,7 @@ Ví dụ:
     }
     function closeModal(){ $("modalBack").style.display = "none"; }
 
+    // ===== Actions =====
     function saveTicketsFromTextarea(){
       if(state.spinning) return;
 
@@ -750,10 +729,10 @@ Ví dụ:
         setDigitsFromStr(state.previewTicket);
       }, ROLL_INTERVAL_MS);
 
-      // dừng từ số 6 -> số 1
+      // DỪNG TỪ SỐ 6 -> SỐ 1 (index 5 -> 0)
       clearStopTimeouts();
       for(let step = 0; step < 6; step++){
-        const idx = 5 - step;
+        const idx = 5 - step; // 5,4,3,2,1,0
         const t = setTimeout(()=>{
           if(state.cancelRequested) return;
 
@@ -908,6 +887,7 @@ Ví dụ:
       URL.revokeObjectURL(a.href);
     }
 
+    // ===== Wire up =====
     $("btnSave").addEventListener("click", saveTicketsFromTextarea);
     $("btnSpin").addEventListener("click", startSpinAutoStop);
     $("btnCancel").addEventListener("click", cancelSpin);
@@ -943,6 +923,7 @@ Ví dụ:
       }
     });
 
+    // ===== Init =====
     load();
     renderPool();
     renderWinners();

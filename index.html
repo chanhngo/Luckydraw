@@ -14,10 +14,8 @@
       --mono: ui-monospace,SFMono-Regular,Menlo,Monaco,Consolas,monospace;
       --sans: ui-sans-serif,system-ui,-apple-system,"Segoe UI",Roboto,Helvetica,Arial;
 
-      /* ===== BACKGROUND IMAGE ===== */
-      --bg-image: url("bg.jpg"); /* đặt file bg.jpg cùng thư mục */
+      --bg-image: url("bg.jpg");
 
-      /* ===== GLASS (SÁNG VỪA) ===== */
       --glass1: rgba(255,255,255,.18);
       --glass2: rgba(255,255,255,.08);
       --glassBorder: rgba(255,255,255,.22);
@@ -28,18 +26,14 @@
 
     body{
       margin:0; font-family:var(--sans); color:var(--text);
-
-      /* Ảnh nền canh TOP */
       background:
         var(--bg-image) center top / cover no-repeat fixed,
         linear-gradient(180deg, rgba(0,0,0,.15), rgba(0,0,0,.55));
-
       min-height:100vh;
       padding:18px;
       display:flex; justify-content:center;
     }
 
-    /* overlay tối nhẹ để chữ/khối nổi rõ */
     body::before{
       content:"";
       position:fixed; inset:0;
@@ -69,23 +63,16 @@
       margin:6px 0 0; font-size:18px; color:#7CFF5E; font-weight:800; letter-spacing:.5px;
       text-shadow:0 8px 25px rgba(0,0,0,.45);
     }
-    .headerRow{
-      display:flex;
-      align-items:center;
-      justify-content:center;
-      gap:14px;
-      flex-wrap:wrap;
-    }
 
     .content{
       display:grid;
       grid-template-columns: 1fr 1.1fr .85fr;
       gap:14px;
       padding:12px 14px 18px;
+      align-items:stretch;
     }
     @media (max-width: 1100px){ .content{grid-template-columns:1fr;} }
 
-    /* ===== CARD (GLASS SÁNG VỪA) ===== */
     .card{
       border:1px solid var(--glassBorder);
       background:
@@ -97,6 +84,9 @@
       -webkit-backdrop-filter: blur(10px);
       padding:14px;
       min-height: 420px;
+
+      /* quan trọng: để các khối bên trong (table/list) co giãn không phá layout */
+      min-width: 0;
     }
 
     .card h3{
@@ -122,6 +112,10 @@
       -webkit-backdrop-filter: blur(10px);
       color:rgba(255,255,255,.92);
       font-family:var(--mono);
+
+      /* FIX #1: tách pill khỏi list */
+      margin-top:10px;
+      margin-bottom:12px;
     }
 
     .row{display:flex; gap:10px; align-items:center; flex-wrap:wrap}
@@ -138,6 +132,7 @@
       box-shadow:0 18px 50px rgba(255,176,0,.20);
       font-size:16px;
       user-select:none;
+      white-space:nowrap;
     }
     .btn:active{transform:scale(.99)}
 
@@ -153,6 +148,7 @@
       letter-spacing:0;
       backdrop-filter: blur(8px);
       -webkit-backdrop-filter: blur(8px);
+      white-space:nowrap;
     }
 
     .btn.danger{
@@ -163,6 +159,7 @@
       padding:10px 14px;
       border-radius:14px;
       font-weight:900;
+      white-space:nowrap;
     }
 
     .btn:disabled{opacity:.45; cursor:not-allowed}
@@ -216,7 +213,6 @@
       -webkit-backdrop-filter: blur(10px);
     }
 
-    /* LOCKED (TRÚNG) RÕ HƠN */
     .digit.locked{
       transform: translateY(-3px) scale(1.03);
       opacity: 1;
@@ -253,7 +249,13 @@
 
     .hint{margin:8px 0 0; color:var(--muted); font-size:12px}
 
-    .list{max-height:300px; overflow:auto; padding-right:6px}
+    /* FIX #1: list tách rõ khỏi pill, và không “đè” */
+    .list{
+      margin-top:6px;
+      max-height:300px;
+      overflow:auto;
+      padding-right:6px;
+    }
 
     .item{
       display:flex; justify-content:space-between; align-items:flex-start;
@@ -266,6 +268,7 @@
       -webkit-backdrop-filter: blur(10px);
       box-shadow: 0 12px 30px rgba(0,0,0,.25);
       margin-bottom:8px;
+      min-width:0;
     }
 
     .tag{
@@ -281,11 +284,20 @@
       -webkit-backdrop-filter: blur(10px);
     }
 
+    /* ===== FIX #2: TABLE không phá layout ===== */
+    .tableWrap{
+      margin-top:10px;
+      overflow-x:auto; /* nếu quá hẹp vẫn không làm card bung */
+    }
+
     table{
       width:100%;
       border-collapse:separate;
       border-spacing:0 8px;
       font-size:13px;
+
+      table-layout: fixed;     /* CHỐT: không bung cột */
+      min-width: 520px;        /* cho trường hợp card quá hẹp -> scroll ngang trong tableWrap */
     }
 
     th{
@@ -294,6 +306,7 @@
       font-size:12px;
       font-weight:900;
       padding:6px 10px;
+      white-space:nowrap;
     }
 
     td{
@@ -304,6 +317,9 @@
       font-family:var(--mono);
       backdrop-filter: blur(10px);
       -webkit-backdrop-filter: blur(10px);
+      overflow:hidden;
+      text-overflow:ellipsis;
+      word-break:break-word;
     }
 
     tr td:first-child{
@@ -317,9 +333,28 @@
       border-bottom-right-radius:14px;
     }
 
+    /* cột time hiển thị 2 dòng gọn */
+    .timeCell{
+      line-height:1.25;
+      white-space:normal;
+      font-family:var(--mono);
+      color:rgba(255,255,255,.82);
+    }
+    .timeCell .t1{ display:block; }
+    .timeCell .t2{ display:block; opacity:.9; }
+
+    /* nút xóa trong bảng gọn lại để không đẩy */
+    .btnDel{
+      padding:8px 12px;
+      border-radius:12px;
+      font-size:12px;
+      font-weight:1000;
+      letter-spacing:.2px;
+      min-width:64px;
+    }
+
     .empty{padding:10px; color:var(--muted); font-size:12px}
 
-    /* Modal */
     .modalBack{
       position:fixed; inset:0;
       background:rgba(0,0,0,.55);
@@ -380,20 +415,21 @@
           </div>
         </div>
 
-        <div style="margin-top:10px; overflow:auto;">
+        <div class="tableWrap">
           <table>
             <thead>
               <tr>
-                <th style="width:120px">Giải</th>
-                <th>Vé trúng</th>
-                <th style="width:160px">Thời gian</th>
-                <th style="width:90px; text-align:right">Xóa</th>
+                <th style="width:92px">Giải</th>
+                <th style="width:110px">Vé trúng</th>
+                <th style="width:150px">Thời gian</th>
+                <th style="width:78px; text-align:right">Xóa</th>
               </tr>
             </thead>
             <tbody id="winnerTbody"></tbody>
           </table>
-          <div class="empty" id="winnerEmpty">Chưa có vé trúng.</div>
         </div>
+
+        <div class="empty" id="winnerEmpty">Chưa có vé trúng.</div>
       </section>
 
       <!-- CENTER: SPIN -->
@@ -467,7 +503,7 @@ Ví dụ:
     </div>
   </div>
 
-  <!-- Audio: đặt cùng thư mục -->
+  <!-- Audio -->
   <audio id="spinMusic" src="music.mp3" preload="auto" loop></audio>
   <audio id="winSfx" src="win.mp3" preload="auto"></audio>
 
@@ -482,7 +518,6 @@ Ví dụ:
     const nowStr = () => {
       const d = new Date();
       const p = (n)=> String(n).padStart(2,"0");
-      // hh:mm dd/mm/yyyy
       return `${p(d.getHours())}:${p(d.getMinutes())} ${p(d.getDate())}/${p(d.getMonth()+1)}/${d.getFullYear()}`;
     };
 
@@ -587,7 +622,7 @@ Ví dụ:
       state.pool.slice(0, 400).forEach(t=>{
         const div = document.createElement("div");
         div.className = "item";
-        div.innerHTML = `<div><strong style="font-family:var(--mono); font-size:14px">${escapeHtml(t)}</strong></div>
+        div.innerHTML = `<div style="min-width:0"><strong style="font-family:var(--mono); font-size:14px">${escapeHtml(t)}</strong></div>
                          <div class="tag">${escapeHtml(t)}</div>`;
         wrap.appendChild(div);
       });
@@ -604,10 +639,8 @@ Ví dụ:
       tb.innerHTML = "";
       $("winnerEmpty").style.display = state.winners.length ? "none" : "block";
 
-      // Ưu tiên hiển thị theo thứ tự giải: G1 -> G2 -> G3
       const prizeRank = { G1: 1, G2: 2, G3: 3 };
 
-      // Sort theo prize trước, rồi theo index (mới nhất trước trong cùng prize)
       const list = state.winners
         .map((w, idx) => ({ ...w, __idx: idx }))
         .sort((a, b) => {
@@ -618,13 +651,21 @@ Ví dụ:
         });
 
       list.forEach((w)=>{
+        // time đang là "hh:mm dd/mm/yyyy" => tách 2 dòng
+        const parts = String(w.time).split(" ");
+        const t1 = parts[0] || w.time;
+        const t2 = parts.slice(1).join(" ") || "";
+
         const tr = document.createElement("tr");
         tr.innerHTML = `
           <td>${escapeHtml(w.prizeName)}</td>
           <td><b style="color:var(--gold); font-size:14px">${escapeHtml(w.ticket)}</b></td>
-          <td style="color:rgba(255,255,255,.80)">${escapeHtml(w.time)}</td>
+          <td class="timeCell">
+            <span class="t1">${escapeHtml(t1)}</span>
+            <span class="t2">${escapeHtml(t2)}</span>
+          </td>
           <td style="text-align:right">
-            <button class="btn danger" data-del="${w.__idx}">XÓA</button>
+            <button class="btn danger btnDel" data-del="${w.__idx}">XÓA</button>
           </td>
         `;
         tb.appendChild(tr);
@@ -709,10 +750,10 @@ Ví dụ:
         setDigitsFromStr(state.previewTicket);
       }, ROLL_INTERVAL_MS);
 
-      // DỪNG TỪ SỐ 6 -> SỐ 1 (index 5 -> 0)
+      // dừng từ số 6 -> số 1
       clearStopTimeouts();
       for(let step = 0; step < 6; step++){
-        const idx = 5 - step; // 5,4,3,2,1,0
+        const idx = 5 - step;
         const t = setTimeout(()=>{
           if(state.cancelRequested) return;
 

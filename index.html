@@ -322,20 +322,48 @@
       letter-spacing:4px;
     }
     .modal p{margin:0; color:rgba(255,255,255,.82)}
-    /* ===== LOGO NỔI HƠN ===== */
+/* ===== Logo header (NỔI + SÁNG) ===== */
 .companyLogo,
 .logoPlaceholder{
-  background: linear-gradient(180deg, rgba(0,0,0,.55), rgba(0,0,0,.25));
-  border: 1px solid rgba(255,216,107,.55);
+  width:78px;
+  height:78px;
+  border-radius:16px;
+
+  /* NỀN SÁNG (badge) giúp tách khỏi nền đỏ */
+  background:
+    radial-gradient(120px 90px at 30% 25%, rgba(255,255,255,.22), transparent 60%),
+    linear-gradient(180deg, rgba(255,255,255,.16), rgba(0,0,0,.22));
+
+  border:1px solid rgba(255,216,107,.70);
+
   box-shadow:
-    0 10px 25px rgba(0,0,0,.55),
-    0 0 0 2px rgba(255,216,107,.18),
-    0 0 22px rgba(255,216,107,.18);
+    0 14px 34px rgba(0,0,0,.55),
+    0 0 0 3px rgba(0,0,0,.30),              /* “viền tối” để tách khỏi nền */
+    0 0 0 5px rgba(255,216,107,.22),        /* “viền vàng” ngoài */
+    0 0 28px rgba(255,216,107,.22);         /* glow vàng */
+
+  backdrop-filter: blur(2px);
 }
 
 .companyLogo{
-  padding:8px;              /* tạo “khung” cho logo */
-  backdrop-filter: blur(2px);
+  object-fit:contain;
+  padding:10px;
+
+  /* TĂNG SÁNG LOGO THỰC SỰ */
+  filter: brightness(1.35) contrast(1.15) saturate(1.1);
+
+  /* Đưa logo lên trên overlay chắc chắn */
+  position:relative;
+  z-index:5;
+}
+
+.logoPlaceholder{
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  font-family:var(--mono);
+  font-size:12px;
+  color:rgba(255,255,255,.85);
 }
     /* ===== LOCKED (TRÚNG) NỔI RÕ HƠN ===== */
 .digit.locked{

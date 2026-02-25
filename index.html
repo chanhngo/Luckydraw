@@ -165,13 +165,19 @@
       border-radius:14px;
       font-weight:900;
     }
+    /* nút nhỏ trong bảng */
+    .btn.danger.small{
+      padding:7px 9px;
+      font-size:12px;
+      border-radius:12px;
+    }
     .btn:disabled{opacity:.45; cursor:not-allowed}
 
     /* ===== CENTER SPIN ===== */
     .spinCard{
       position:relative;
-      isolation:isolate;   /* chống tràn hiệu ứng sang card khác */
-      overflow:hidden;     /* vẫn chặn tràn, nhưng số đã responsive nên không bị cắt nữa */
+      isolation:isolate;
+      overflow:hidden;
     }
 
     .center{
@@ -195,7 +201,7 @@
       backdrop-filter: blur(8px);
     }
 
-    /* ===== DIGITS RESPONSIVE: không bị cắt ===== */
+    /* ===== DIGITS RESPONSIVE ===== */
     .digits{
       display:flex;
       justify-content:center;
@@ -266,7 +272,7 @@
       color:rgba(255,255,255,.92);
       font-family:var(--mono);
       margin-top:10px;
-      margin-bottom:12px; /* chống dính với list */
+      margin-bottom:12px;
     }
 
     .list{
@@ -299,27 +305,30 @@
 
     /* ===== TABLE WINNERS ===== */
     .tableWrap{
-  margin-top:10px;
-  overflow-x:auto;          /* quan trọng */
-  padding-bottom:4px;
-}
+      margin-top:10px;
+      overflow-x:auto;
+      padding-bottom:4px;
+    }
+
     table{
-  width:100%;
-  min-width:560px;          /* thêm dòng này (có thể tăng 600-680 tùy bạn) */
-  border-collapse:separate;
-  border-spacing:0 8px;
-  font-size:13px;
-  table-layout: fixed;
-}
+      width:100%;
+      min-width:520px;  /* giảm chút cho gọn */
+      border-collapse:separate;
+      border-spacing:0 8px;
+      font-size:13px;
+      table-layout: fixed;
+    }
+
     th{
-  text-align:left;
-  color:rgba(255,255,255,.80);
-  font-size:12px;
-  font-weight:900;
-  padding:8px 10px;         /* tăng chút */
-  white-space:nowrap;       /* quan trọng: không xuống dòng */
-  line-height:1.2;
-}
+      text-align:left;
+      color:rgba(255,255,255,.80);
+      font-size:12px;
+      font-weight:900;
+      padding:8px 10px;
+      white-space:nowrap;
+      line-height:1.2;
+    }
+
     td{
       padding:10px 10px;
       background:rgba(0,0,0,.12);
@@ -330,6 +339,7 @@
       text-overflow:ellipsis;
       white-space:nowrap;
     }
+
     tr td:first-child{
       border-left:1px solid rgba(255,255,255,.16);
       border-top-left-radius:14px;
@@ -341,6 +351,22 @@
       border-bottom-right-radius:14px;
     }
     .empty{padding:10px; color:var(--muted); font-size:12px}
+
+    /* custom độ rộng cột bằng colgroup */
+    .winnerTable{ table-layout: fixed; width:100%; }
+    .winnerTable .cPrize  { width: 90px; }
+    .winnerTable .cTicket { width: 110px; } /* 6 số đủ */
+    .winnerTable .cTime   { width: 150px; }
+    .winnerTable .cAction { width: 86px; }
+
+    /* vé trúng nhỏ gọn */
+    .ticketCell{
+      font-family:var(--mono);
+      font-size:12px;
+      font-weight:900;
+      color:rgba(255,255,255,.92);
+      letter-spacing:.5px;
+    }
 
     /* ===== MODAL ===== */
     .modalBack{
@@ -399,13 +425,19 @@
           </div>
 
           <div class="tableWrap">
-            <table>
+            <table class="winnerTable">
+              <colgroup>
+                <col class="cPrize" />
+                <col class="cTicket" />
+                <col class="cTime" />
+                <col class="cAction" />
+              </colgroup>
               <thead>
                 <tr>
-                  <th style="width:110px">Giải</th>
+                  <th>Giải</th>
                   <th>Vé trúng</th>
-                  <th style="width:150px">Thời gian</th>
-                  <th style="width:80px; text-align:right">Xóa</th>
+                  <th>Thời gian</th>
+                  <th style="text-align:right">Xóa</th>
                 </tr>
               </thead>
               <tbody id="winnerTbody"></tbody>
@@ -501,7 +533,7 @@ Ví dụ:
     const pad6 = (s) => String(s).replace(/\D/g,"").slice(0,6).padStart(6,"0");
 
     // ===== SPIN MUSIC PLAYLIST =====
-    const SPIN_TRACKS = ["music1.mp3", "music2.mp3", "music3.mp3"]; // để cùng folder
+    const SPIN_TRACKS = ["music1.mp3", "music2.mp3", "music3.mp3"];
     let lastSpinTrack = null;
 
     function pickRandomTrack(tracks, avoid){
@@ -559,56 +591,56 @@ Ví dụ:
       a.volume = Math.max(0, Math.min(1, v));
     }
 
+    // bản chắc kèo: đổi bài + đợi canplay + fallback nếu lỗi file
     function playSpinMusic(){
-  const on = $("musicOn") ? $("musicOn").checked : true;
-  if(!on) return;
+      const on = $("musicOn") ? $("musicOn").checked : true;
+      if(!on) return;
 
-  const a = $("spinMusic");
-  if(!a) return;
+      const a = $("spinMusic");
+      if(!a) return;
 
-  a.pause();
-  a.currentTime = 0;
-
-  let tries = 0;
-
-  const attempt = (avoidTrack) => {
-    const track = pickRandomTrack(SPIN_TRACKS, avoidTrack);
-    lastSpinTrack = track;
-
-    a.src = track;
-    a.load();
-    setSpinMusicVolume(0.65);
-
-    const doPlay = () => {
-      a.oncanplay = null;
-      a.oncanplaythrough = null;
-      a.onerror = null;
+      a.pause();
       a.currentTime = 0;
-      a.play().catch(()=>{});
-    };
 
-    a.onerror = () => {
-      tries++;
-      if(tries < Math.min(3, SPIN_TRACKS.length)){
-        attempt(track);
-      }
-    };
+      let tries = 0;
 
-    if(a.readyState >= 3) doPlay();
-    else{
-      a.oncanplay = doPlay;
-      a.oncanplaythrough = doPlay;
+      const attempt = (avoidTrack) => {
+        const track = pickRandomTrack(SPIN_TRACKS, avoidTrack);
+        lastSpinTrack = track;
+
+        a.src = track;
+        a.load();
+        setSpinMusicVolume(0.65);
+
+        const doPlay = () => {
+          a.oncanplay = null;
+          a.oncanplaythrough = null;
+          a.onerror = null;
+          a.currentTime = 0;
+          a.play().catch(()=>{});
+        };
+
+        a.onerror = () => {
+          tries++;
+          if(tries < Math.min(3, SPIN_TRACKS.length)){
+            attempt(track);
+          }
+        };
+
+        if(a.readyState >= 3) doPlay();
+        else{
+          a.oncanplay = doPlay;
+          a.oncanplaythrough = doPlay;
+        }
+      };
+
+      attempt(lastSpinTrack);
     }
-  };
-
-  attempt(lastSpinTrack);
-}
 
     function lowerSpinMusicAfterWin(){
       const on = $("musicOn") ? $("musicOn").checked : true;
       if(!on) return;
-      // lúc đã ra số trúng: giảm nhỏ lại chút
-      setSpinMusicVolume(0.18);     // tự chỉnh (ví dụ 0.12 - 0.25)
+      setSpinMusicVolume(0.18); // tự chỉnh
     }
 
     function stopSpinMusic(){
@@ -702,10 +734,10 @@ Ví dụ:
         const tr = document.createElement("tr");
         tr.innerHTML = `
           <td>${escapeHtml(w.prizeName)}</td>
-          <td><b style="color:var(--gold); font-size:14px">${escapeHtml(w.ticket)}</b></td>
+          <td><span class="ticketCell">${escapeHtml(w.ticket)}</span></td>
           <td style="color:rgba(255,255,255,.80)">${escapeHtml(w.time)}</td>
           <td style="text-align:right">
-            <button class="btn danger" data-del="${w.__idx}">XÓA</button>
+            <button class="btn danger small" data-del="${w.__idx}">XÓA</button>
           </td>
         `;
         tb.appendChild(tr);
@@ -790,7 +822,6 @@ Ví dụ:
         setDigitsFromStr(state.previewTicket);
       }, ROLL_INTERVAL_MS);
 
-      // dừng từ số 6 -> số 1
       clearStopTimeouts();
       for(let step = 0; step < 6; step++){
         const idx = 5 - step;
@@ -820,7 +851,7 @@ Ví dụ:
       state.rollTimer = null;
       clearStopTimeouts();
 
-      // RA SỐ TRÚNG: KHÔNG TẮT NHẠC, CHỈ GIẢM VOLUME NHỎ LẠI
+      // RA SỐ TRÚNG: KHÔNG TẮT NHẠC, CHỈ GIẢM VOLUME
       lowerSpinMusicAfterWin();
 
       const key = $("prizeSelect").value;
@@ -879,7 +910,7 @@ Ví dụ:
     }
 
     function onModalClose(){
-      // ĐÓNG MODAL / QUA GIẢI TIẾP: DỪNG NHẠC để lần QUAY sau random bài khác (music2/3...)
+      // ĐÓNG MODAL / QUA GIẢI TIẾP: DỪNG NHẠC để lần QUAY sau random bài khác
       stopSpinMusic();
 
       closeModal();

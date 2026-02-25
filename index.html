@@ -6,19 +6,22 @@
   <title>Tiệc Tân Niên 2026 - Vòng quay may mắn</title>
   <style>
     :root{
-      --bg1:#7a0b10; --bg2:#2a0206;
       --text:rgba(255,255,255,.92);
       --muted:rgba(255,255,255,.70);
-      --line:rgba(255,255,255,.16);
       --gold:#ffd86b;
-      --gold2:#f7c046;
       --danger:#ff4d4d;
       --shadow:0 18px 60px rgba(0,0,0,.45);
       --mono: ui-monospace,SFMono-Regular,Menlo,Monaco,Consolas,monospace;
       --sans: ui-sans-serif,system-ui,-apple-system,"Segoe UI",Roboto,Helvetica,Arial;
 
       /* ===== BACKGROUND IMAGE ===== */
-      --bg-image: url("bg.jpg"); /* bạn đặt file bg.jpg cùng thư mục */
+      --bg-image: url("bg.jpg"); /* đặt file bg.jpg cùng thư mục */
+
+      /* ===== GLASS (SÁNG VỪA) ===== */
+      --glass1: rgba(255,255,255,.18);
+      --glass2: rgba(255,255,255,.08);
+      --glassBorder: rgba(255,255,255,.22);
+      --glassShadow: 0 18px 50px rgba(0,0,0,.35);
     }
 
     *{box-sizing:border-box}
@@ -26,7 +29,7 @@
     body{
       margin:0; font-family:var(--sans); color:var(--text);
 
-      /* Ảnh nền: canh TOP để thấy phần đèn lồng + chữ trên ảnh */
+      /* Ảnh nền canh TOP */
       background:
         var(--bg-image) center top / cover no-repeat fixed,
         linear-gradient(180deg, rgba(0,0,0,.15), rgba(0,0,0,.55));
@@ -36,23 +39,23 @@
       display:flex; justify-content:center;
     }
 
-    /* overlay: làm tối vùng giữa (để card/number nổi), nhưng vẫn giữ viền 2 bên đẹp */
+    /* overlay tối nhẹ để chữ/khối nổi rõ */
     body::before{
       content:"";
       position:fixed; inset:0;
       pointer-events:none;
       z-index:-1;
       background:
-        radial-gradient(900px 520px at 50% 45%, rgba(0,0,0,.62), rgba(0,0,0,.15) 65%, rgba(0,0,0,.05) 100%),
-        linear-gradient(180deg, rgba(0,0,0,.08), rgba(0,0,0,.45));
+        radial-gradient(900px 520px at 50% 45%, rgba(0,0,0,.58), rgba(0,0,0,.12) 65%, rgba(0,0,0,.06) 100%),
+        linear-gradient(180deg, rgba(0,0,0,.10), rgba(0,0,0,.40));
     }
 
     .frame{
       width:min(1280px,100%);
-      border:2px solid rgba(255,216,107,.35);
+      border:2px solid rgba(255,216,107,.30);
       border-radius:24px;
       box-shadow:var(--shadow);
-      background:linear-gradient(180deg, rgba(0,0,0,.16), rgba(0,0,0,.08));
+      background:linear-gradient(180deg, rgba(0,0,0,.14), rgba(0,0,0,.06));
       overflow:hidden;
       backdrop-filter: blur(2px);
     }
@@ -66,36 +69,12 @@
       margin:6px 0 0; font-size:18px; color:#7CFF5E; font-weight:800; letter-spacing:.5px;
       text-shadow:0 8px 25px rgba(0,0,0,.45);
     }
-
-    /* ===== Logo header ===== */
     .headerRow{
       display:flex;
       align-items:center;
       justify-content:center;
       gap:14px;
       flex-wrap:wrap;
-    }
-    .companyLogo{
-      width:72px;
-      height:72px;
-      border-radius:14px;
-      border:1px solid rgba(255,216,107,.35);
-      background:rgba(0,0,0,.18);
-      object-fit:contain;
-      box-shadow:0 10px 25px rgba(0,0,0,.35);
-    }
-    .logoPlaceholder{
-      width:72px;
-      height:72px;
-      border-radius:14px;
-      border:1px dashed rgba(255,216,107,.35);
-      background:rgba(0,0,0,.18);
-      display:flex;
-      align-items:center;
-      justify-content:center;
-      font-family:var(--mono);
-      font-size:12px;
-      color:rgba(255,255,255,.75);
     }
 
     .content{
@@ -106,14 +85,20 @@
     }
     @media (max-width: 1100px){ .content{grid-template-columns:1fr;} }
 
+    /* ===== CARD (GLASS SÁNG VỪA) ===== */
     .card{
-      border:1px solid rgba(255,255,255,.10);
-      background:linear-gradient(180deg, rgba(10,6,8,.38), rgba(10,6,8,.26));
+      border:1px solid var(--glassBorder);
+      background:
+        linear-gradient(135deg, var(--glass1), var(--glass2)),
+        rgba(0,0,0,.12);
       border-radius:18px;
-      box-shadow:0 18px 40px rgba(0,0,0,.35);
+      box-shadow: var(--glassShadow);
+      backdrop-filter: blur(10px);
+      -webkit-backdrop-filter: blur(10px);
       padding:14px;
       min-height: 420px;
     }
+
     .card h3{
       margin:0 0 10px;
       font-size:18px;
@@ -121,19 +106,24 @@
       color:var(--gold);
       text-shadow:0 6px 20px rgba(0,0,0,.35);
     }
+
     .topRow{
       display:flex; justify-content:space-between; align-items:center; gap:10px; flex-wrap:wrap;
       margin-bottom:8px;
     }
+
     .pill{
       font-size:16px;
       padding:10px 12px;
       border-radius:999px;
-      border:1px solid rgba(255,255,255,.10);
-      background:rgba(0,0,0,.18);
-      color:rgba(255,255,255,.88);
+      border:1px solid rgba(255,255,255,.20);
+      background: linear-gradient(135deg, rgba(255,255,255,.16), rgba(255,255,255,.06));
+      backdrop-filter: blur(10px);
+      -webkit-backdrop-filter: blur(10px);
+      color:rgba(255,255,255,.92);
       font-family:var(--mono);
     }
+
     .row{display:flex; gap:10px; align-items:center; flex-wrap:wrap}
 
     .btn{
@@ -150,17 +140,21 @@
       user-select:none;
     }
     .btn:active{transform:scale(.99)}
+
     .btn.secondary{
-      background:rgba(255,255,255,.06);
+      background:rgba(255,255,255,.08);
       color:var(--text);
-      border:1px solid rgba(255,255,255,.10);
+      border:1px solid rgba(255,255,255,.18);
       box-shadow:none;
       font-size:13px;
       padding:10px 14px;
       border-radius:14px;
       font-weight:900;
       letter-spacing:0;
+      backdrop-filter: blur(8px);
+      -webkit-backdrop-filter: blur(8px);
     }
+
     .btn.danger{
       background:linear-gradient(135deg, var(--danger), #ff7aa8);
       color:white;
@@ -170,36 +164,44 @@
       border-radius:14px;
       font-weight:900;
     }
+
     .btn:disabled{opacity:.45; cursor:not-allowed}
 
     .center{
-      display:flex; flex-direction:column; align-items:center; gap:12px; padding-top:28px;
+      display:flex; flex-direction:column; align-items:center; gap:14px; padding-top:28px;
     }
+
     select{
       width:min(360px, 100%);
-      border:2px solid rgba(255,216,107,.35);
+      border:2px solid rgba(255,216,107,.30);
       border-radius:12px;
-      background:rgba(0,0,0,.25);
+      background:linear-gradient(135deg, rgba(255,255,255,.10), rgba(255,255,255,.04));
       padding:10px 12px;
       color:var(--text);
       font-weight:900;
       font-size:16px;
       outline:none;
+      backdrop-filter: blur(10px);
+      -webkit-backdrop-filter: blur(10px);
     }
 
     .digits{
       display:flex;
-      gap:12px;
+      gap:16px;
       justify-content:center;
       flex-wrap:nowrap;
-      margin-top:6px;
+      margin-top:14px;
       font-family:var(--mono);
     }
+
     .digit{
+      flex:0 0 110px;
       width:110px; height:140px;
       border-radius:18px;
-      border:1px solid rgba(255,216,107,.18);
-      background:linear-gradient(180deg, rgba(255,255,255,.07), rgba(0,0,0,.35));
+      border:1px solid rgba(255,216,107,.22);
+      background:
+        linear-gradient(135deg, rgba(255,255,255,.12), rgba(255,255,255,.04)),
+        rgba(0,0,0,.22);
       display:flex; align-items:center; justify-content:center;
       font-size:86px;
       font-weight:1000;
@@ -209,14 +211,25 @@
         0 0 0 1px rgba(255,216,107,.10),
         0 16px 40px rgba(0,0,0,.45);
       transition: transform .18s ease, filter .18s ease, opacity .18s ease;
-      opacity:.95;
+      opacity:.96;
+      backdrop-filter: blur(10px);
+      -webkit-backdrop-filter: blur(10px);
     }
+
+    /* LOCKED (TRÚNG) RÕ HƠN */
     .digit.locked{
-      filter: drop-shadow(0 0 12px rgba(255,216,107,.22));
-      transform: translateY(-2px) scale(1.01);
-      opacity:1;
-      outline: 2px solid rgba(255,216,107,.14);
-      outline-offset: -6px;
+      transform: translateY(-3px) scale(1.03);
+      opacity: 1;
+      border: 2px solid rgba(255,216,107,.70);
+      background:
+        linear-gradient(135deg, rgba(255,216,107,.16), rgba(255,255,255,.06)),
+        rgba(0,0,0,.22);
+      box-shadow:
+        0 0 0 2px rgba(255,216,107,.18),
+        0 18px 60px rgba(0,0,0,.55),
+        0 0 26px rgba(255,216,107,.30);
+      outline: none;
+      filter: none;
     }
 
     .meta{ color:var(--muted); font-size:12px; text-align:center; font-family:var(--mono); }
@@ -226,36 +239,46 @@
       min-height:150px;
       resize:vertical;
       border-radius:14px;
-      border:1px solid rgba(255,255,255,.10);
-      background:rgba(0,0,0,.18);
+      border:1px solid rgba(255,255,255,.18);
+      background: linear-gradient(135deg, rgba(255,255,255,.12), rgba(255,255,255,.04));
       color:var(--text);
       padding:14px 14px;
       font-family:var(--mono);
       font-size:16px;
       outline:none;
       line-height:1.5;
+      backdrop-filter: blur(10px);
+      -webkit-backdrop-filter: blur(10px);
     }
+
     .hint{margin:8px 0 0; color:var(--muted); font-size:12px}
 
     .list{max-height:300px; overflow:auto; padding-right:6px}
+
     .item{
       display:flex; justify-content:space-between; align-items:flex-start;
       gap:10px;
       padding:10px 10px;
-      border:1px solid rgba(255,255,255,.10);
+      border:1px solid rgba(255,255,255,.18);
       border-radius:14px;
-      background:rgba(0,0,0,.18);
+      background: linear-gradient(135deg, rgba(255,255,255,.14), rgba(255,255,255,.05));
+      backdrop-filter: blur(10px);
+      -webkit-backdrop-filter: blur(10px);
+      box-shadow: 0 12px 30px rgba(0,0,0,.25);
       margin-bottom:8px;
     }
+
     .tag{
       font-family:var(--mono);
       font-size:12px;
       padding:5px 8px;
       border-radius:999px;
-      border:1px solid rgba(255,255,255,.10);
-      background:rgba(0,0,0,.20);
+      border:1px solid rgba(255,255,255,.18);
+      background:rgba(0,0,0,.12);
       white-space:nowrap;
-      color:rgba(255,255,255,.85);
+      color:rgba(255,255,255,.88);
+      backdrop-filter: blur(10px);
+      -webkit-backdrop-filter: blur(10px);
     }
 
     table{
@@ -264,32 +287,39 @@
       border-spacing:0 8px;
       font-size:13px;
     }
+
     th{
       text-align:left;
-      color:rgba(255,255,255,.78);
+      color:rgba(255,255,255,.82);
       font-size:12px;
       font-weight:900;
       padding:6px 10px;
     }
+
     td{
       padding:10px 10px;
-      background:rgba(0,0,0,.18);
-      border-top:1px solid rgba(255,255,255,.10);
-      border-bottom:1px solid rgba(255,255,255,.10);
+      background: linear-gradient(135deg, rgba(255,255,255,.14), rgba(255,255,255,.05));
+      border-top:1px solid rgba(255,255,255,.16);
+      border-bottom:1px solid rgba(255,255,255,.16);
       font-family:var(--mono);
+      backdrop-filter: blur(10px);
+      -webkit-backdrop-filter: blur(10px);
     }
+
     tr td:first-child{
-      border-left:1px solid rgba(255,255,255,.10);
+      border-left:1px solid rgba(255,255,255,.16);
       border-top-left-radius:14px;
       border-bottom-left-radius:14px;
     }
     tr td:last-child{
-      border-right:1px solid rgba(255,255,255,.10);
+      border-right:1px solid rgba(255,255,255,.16);
       border-top-right-radius:14px;
       border-bottom-right-radius:14px;
     }
+
     .empty{padding:10px; color:var(--muted); font-size:12px}
 
+    /* Modal */
     .modalBack{
       position:fixed; inset:0;
       background:rgba(0,0,0,.55);
@@ -302,10 +332,14 @@
       width:min(560px, 100%);
       border-radius:22px;
       border:2px solid rgba(255,216,107,.35);
-      background:linear-gradient(180deg, rgba(25,5,8,.95), rgba(0,0,0,.75));
+      background:
+        linear-gradient(135deg, rgba(255,255,255,.12), rgba(255,255,255,.05)),
+        rgba(0,0,0,.58);
       box-shadow:0 28px 80px rgba(0,0,0,.6);
       padding:18px;
       text-align:center;
+      backdrop-filter: blur(14px);
+      -webkit-backdrop-filter: blur(14px);
     }
     .modal h2{
       margin:6px 0 8px;
@@ -322,72 +356,12 @@
       letter-spacing:4px;
     }
     .modal p{margin:0; color:rgba(255,255,255,.82)}
-/* ===== Logo header (NỔI + SÁNG) ===== */
-.companyLogo,
-.logoPlaceholder{
-  width:78px;
-  height:78px;
-  border-radius:16px;
-
-  /* NỀN SÁNG (badge) giúp tách khỏi nền đỏ */
-  background:
-    radial-gradient(120px 90px at 30% 25%, rgba(255,255,255,.22), transparent 60%),
-    linear-gradient(180deg, rgba(255,255,255,.16), rgba(0,0,0,.22));
-
-  border:1px solid rgba(255,216,107,.70);
-
-  box-shadow:
-    0 14px 34px rgba(0,0,0,.55),
-    0 0 0 3px rgba(0,0,0,.30),              /* “viền tối” để tách khỏi nền */
-    0 0 0 5px rgba(255,216,107,.22),        /* “viền vàng” ngoài */
-    0 0 28px rgba(255,216,107,.22);         /* glow vàng */
-
-  backdrop-filter: blur(2px);
-}
-
-.companyLogo{
-  object-fit:contain;
-  padding:10px;
-
-  /* TĂNG SÁNG LOGO THỰC SỰ */
-  filter: brightness(1.35) contrast(1.15) saturate(1.1);
-
-  /* Đưa logo lên trên overlay chắc chắn */
-  position:relative;
-  z-index:5;
-}
-
-.logoPlaceholder{
-  display:flex;
-  align-items:center;
-  justify-content:center;
-  font-family:var(--mono);
-  font-size:12px;
-  color:rgba(255,255,255,.85);
-}
-    /* ===== LOCKED (TRÚNG) NỔI RÕ HƠN ===== */
-.digit.locked{
-  transform: translateY(-3px) scale(1.03);
-  opacity: 1;
-  border: 2px solid rgba(255,216,107,.75);
-  background: linear-gradient(180deg, rgba(255,216,107,.14), rgba(0,0,0,.38));
-  box-shadow:
-    0 0 0 2px rgba(255,216,107,.20),
-    0 18px 60px rgba(0,0,0,.55),
-    0 0 26px rgba(255,216,107,.35);
-  outline: none; /* bỏ outline cũ nếu có */
-  filter: none;  /* bỏ drop-shadow cũ nếu có */
-}
   </style>
 </head>
 <body>
   <div class="frame">
     <header>
       <div class="headerRow">
-        <img class="companyLogo" src="logo.png" alt="Logo công ty"
-             onerror="this.style.display='none'; document.getElementById('logoPh').style.display='flex';" />
-        <div class="logoPlaceholder" id="logoPh" style="display:none;">LOGO</div>
-
         <div>
           <h1>VIỆT PHÁP GROUP - TIỆC TÂN NIÊN 2026</h1>
           <p>VÒNG QUAY MAY MẮN</p>
@@ -396,6 +370,7 @@
     </header>
 
     <div class="content">
+      <!-- LEFT: WINNERS TABLE -->
       <section class="card">
         <div class="topRow">
           <h3 style="margin:0">Danh sách trúng thưởng</h3>
@@ -421,6 +396,7 @@
         </div>
       </section>
 
+      <!-- CENTER: SPIN -->
       <section class="card">
         <div class="center">
           <h3 style="margin:0">Mã vé trúng thưởng</h3>
@@ -452,6 +428,7 @@
         </div>
       </section>
 
+      <!-- RIGHT: INPUT + CURRENT POOL -->
       <section class="card">
         <div class="topRow">
           <h3 style="margin:0">Danh sách vé tham gia</h3>
@@ -477,6 +454,7 @@ Ví dụ:
     </div>
   </div>
 
+  <!-- Modal -->
   <div class="modalBack" id="modalBack">
     <div class="modal">
       <h2 id="modalTitle">Chúc mừng!</h2>
@@ -504,8 +482,10 @@ Ví dụ:
     const nowStr = () => {
       const d = new Date();
       const p = (n)=> String(n).padStart(2,"0");
-      return `${d.getFullYear()}-${p(d.getMonth()+1)}-${p(d.getDate())} ${p(d.getHours())}:${p(d.getMinutes())}:${p(d.getSeconds())}`;
+      // hh:mm dd/mm/yyyy
+      return `${p(d.getHours())}:${p(d.getMinutes())} ${p(d.getDate())}/${p(d.getMonth()+1)}/${d.getFullYear()}`;
     };
+
     function escapeHtml(s){
       return String(s).replace(/[&<>"']/g, c => ({
         "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"
@@ -620,45 +600,44 @@ Ví dụ:
     }
 
     function renderWinners(){
-  const tb = $("winnerTbody");
-  tb.innerHTML = "";
-  $("winnerEmpty").style.display = state.winners.length ? "none" : "block";
+      const tb = $("winnerTbody");
+      tb.innerHTML = "";
+      $("winnerEmpty").style.display = state.winners.length ? "none" : "block";
 
-  // Ưu tiên hiển thị theo thứ tự giải: G1 -> G2 -> G3
-  const prizeRank = { G1: 1, G2: 2, G3: 3 };
+      // Ưu tiên hiển thị theo thứ tự giải: G1 -> G2 -> G3
+      const prizeRank = { G1: 1, G2: 2, G3: 3 };
 
-  // Copy + sort: theo prize trước, rồi theo thời gian (mới nhất trước)
-  const list = state.winners
-    .map((w, idx) => ({ ...w, __idx: idx })) // giữ index gốc để xóa đúng
-    .sort((a, b) => {
-      const ra = prizeRank[a.prizeKey] ?? 99;
-      const rb = prizeRank[b.prizeKey] ?? 99;
-      if(ra !== rb) return ra - rb;
+      // Sort theo prize trước, rồi theo index (mới nhất trước trong cùng prize)
+      const list = state.winners
+        .map((w, idx) => ({ ...w, __idx: idx }))
+        .sort((a, b) => {
+          const ra = prizeRank[a.prizeKey] ?? 99;
+          const rb = prizeRank[b.prizeKey] ?? 99;
+          if(ra !== rb) return ra - rb;
+          return b.__idx - a.__idx;
+        });
 
-      // cùng giải: mới nhất trước (dựa trên index push)
-      return b.__idx - a.__idx;
-    });
+      list.forEach((w)=>{
+        const tr = document.createElement("tr");
+        tr.innerHTML = `
+          <td>${escapeHtml(w.prizeName)}</td>
+          <td><b style="color:var(--gold); font-size:14px">${escapeHtml(w.ticket)}</b></td>
+          <td style="color:rgba(255,255,255,.80)">${escapeHtml(w.time)}</td>
+          <td style="text-align:right">
+            <button class="btn danger" data-del="${w.__idx}">XÓA</button>
+          </td>
+        `;
+        tb.appendChild(tr);
+      });
 
-  list.forEach((w)=>{
-    const tr = document.createElement("tr");
-    tr.innerHTML = `
-      <td>${escapeHtml(w.prizeName)}</td>
-      <td><b style="color:var(--gold); font-size:14px">${escapeHtml(w.ticket)}</b></td>
-      <td style="color:rgba(255,255,255,.75)">${escapeHtml(w.time)}</td>
-      <td style="text-align:right">
-        <button class="btn danger" data-del="${w.__idx}">XÓA</button>
-      </td>
-    `;
-    tb.appendChild(tr);
-  });
+      tb.querySelectorAll("button[data-del]").forEach(btn=>{
+        btn.addEventListener("click", ()=>{
+          const idx = parseInt(btn.getAttribute("data-del"), 10);
+          deleteWinner(idx);
+        });
+      });
+    }
 
-  tb.querySelectorAll("button[data-del]").forEach(btn=>{
-    btn.addEventListener("click", ()=>{
-      const idx = parseInt(btn.getAttribute("data-del"), 10);
-      deleteWinner(idx);
-    });
-  });
-}
     function openModal(prizeKey, ticket, time){
       $("modalTitle").textContent = `🎉 Chúc mừng ${prizeLabel(prizeKey)}!`;
       $("modalSub").textContent = "Tiệc Tân Niên 2026";

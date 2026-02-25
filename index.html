@@ -299,23 +299,27 @@
 
     /* ===== TABLE WINNERS ===== */
     .tableWrap{
-      margin-top:10px;
-      overflow-x:hidden;
-    }
+  margin-top:10px;
+  overflow-x:auto;          /* quan trọng */
+  padding-bottom:4px;
+}
     table{
-      width:100%;
-      border-collapse:separate;
-      border-spacing:0 8px;
-      font-size:13px;
-      table-layout: fixed;
-    }
+  width:100%;
+  min-width:560px;          /* thêm dòng này (có thể tăng 600-680 tùy bạn) */
+  border-collapse:separate;
+  border-spacing:0 8px;
+  font-size:13px;
+  table-layout: fixed;
+}
     th{
-      text-align:left;
-      color:rgba(255,255,255,.80);
-      font-size:12px;
-      font-weight:900;
-      padding:6px 10px;
-    }
+  text-align:left;
+  color:rgba(255,255,255,.80);
+  font-size:12px;
+  font-weight:900;
+  padding:8px 10px;         /* tăng chút */
+  white-space:nowrap;       /* quan trọng: không xuống dòng */
+  line-height:1.2;
+}
     td{
       padding:10px 10px;
       background:rgba(0,0,0,.12);

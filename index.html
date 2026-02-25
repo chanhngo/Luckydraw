@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>Quay Vé Số - Nhập Danh Sách Vé (Remove khi trúng)</title>
+  <title>Tiệc Tân Niên 2026 - Quay Vé Số</title>
   <style>
     :root{
       --bg1:#7a0b10; --bg2:#2a0206;
@@ -36,36 +36,23 @@
       background:linear-gradient(180deg, rgba(0,0,0,.18), rgba(0,0,0,.08));
       overflow:hidden;
     }
-    header{
-      padding:18px 20px 10px;
-      text-align:center;
-    }
+    header{ padding:18px 20px 10px; text-align:center; }
     header h1{
-      margin:0;
-      font-weight:900;
-      letter-spacing:1px;
-      font-size:36px;
-      color:var(--gold);
-      text-shadow:0 10px 35px rgba(0,0,0,.45);
+      margin:0; font-weight:900; letter-spacing:1px; font-size:36px;
+      color:var(--gold); text-shadow:0 10px 35px rgba(0,0,0,.45);
     }
     header p{
-      margin:6px 0 0;
-      font-size:18px;
-      color:#7CFF5E;
-      font-weight:800;
-      letter-spacing:.5px;
+      margin:6px 0 0; font-size:18px; color:#7CFF5E; font-weight:800; letter-spacing:.5px;
       text-shadow:0 8px 25px rgba(0,0,0,.35);
     }
 
     .content{
-      display:grid;
-      grid-template-columns: 1fr 1.1fr 1fr;
-      gap:14px;
-      padding:12px 14px 18px;
-    }
-    @media (max-width: 1100px){
-      .content{grid-template-columns:1fr;}
-    }
+        display:grid;
+        grid-template-columns: 1fr 1.1fr .85fr; /* <-- cột phải hẹp hơn */
+        gap:14px;
+        padding:12px 14px 18px;
+      }
+    @media (max-width: 1100px){ .content{grid-template-columns:1fr;} }
 
     .card{
       border:1px solid var(--line);
@@ -87,14 +74,14 @@
       margin-bottom:8px;
     }
     .pill{
-      font-size:12px;
-      padding:6px 10px;
-      border-radius:999px;
-      border:1px solid var(--line);
-      background:rgba(0,0,0,.20);
-      color:rgba(255,255,255,.82);
-      font-family:var(--mono);
-    }
+        font-size:16px;        /* <-- to hơn */
+        padding:10px 12px;     /* <-- dày hơn */
+        border-radius:999px;
+        border:1px solid var(--line);
+        background:rgba(0,0,0,.20);
+        color:rgba(255,255,255,.88);
+        font-family:var(--mono);
+      }
     .row{display:flex; gap:10px; align-items:center; flex-wrap:wrap}
     .btn{
       cursor:pointer;
@@ -148,10 +135,13 @@
       outline:none;
     }
     .digits{
-      display:flex; gap:12px; justify-content:center; flex-wrap:wrap;
-      margin-top:6px;
-      font-family:var(--mono);
-    }
+        display:flex;
+        gap:12px;
+        justify-content:center;
+        flex-wrap:nowrap;      /* <-- CHỐT: không xuống dòng */
+        margin-top:6px;
+        font-family:var(--mono);
+      }
     .digit{
       width:110px; height:140px;
       border-radius:18px;
@@ -163,13 +153,17 @@
       color:var(--gold);
       text-shadow:0 10px 28px rgba(0,0,0,.55);
       box-shadow:0 0 0 2px rgba(255,208,90,.18), 0 0 55px rgba(255,216,107,.18);
+      transition: transform .18s ease, filter .18s ease, opacity .18s ease;
+      opacity:.95;
     }
-    .meta{
-      color:var(--muted);
-      font-size:12px;
-      text-align:center;
-      font-family:var(--mono);
+    .digit.locked{
+      filter: drop-shadow(0 0 20px rgba(255,216,107,.35));
+      transform: translateY(-2px) scale(1.01);
+      opacity:1;
+      outline: 2px solid rgba(255,216,107,.25);
+      outline-offset: -6px;
     }
+    .meta{ color:var(--muted); font-size:12px; text-align:center; font-family:var(--mono); }
 
     textarea{
       width:100%;
@@ -179,11 +173,11 @@
       border:1px solid var(--line);
       background:rgba(0,0,0,.22);
       color:var(--text);
-      padding:10px 12px;
+      padding:14px 14px;     /* <-- to hơn chút */
       font-family:var(--mono);
-      font-size:12px;
+      font-size:16px;        /* <-- chữ to hơn */
       outline:none;
-      line-height:1.4;
+      line-height:1.5;
     }
     .hint{margin:8px 0 0; color:var(--muted); font-size:12px}
 
@@ -239,21 +233,46 @@
       border-bottom-right-radius:14px;
     }
     .empty{padding:10px; color:var(--muted); font-size:12px}
-    .kbd{
-      font-family:var(--mono);
-      padding:2px 6px;
-      border-radius:8px;
-      border:1px solid var(--line);
-      background:rgba(0,0,0,.22);
-      font-size:11px;
-      color:rgba(255,255,255,.85);
+
+    /* Modal */
+    .modalBack{
+      position:fixed; inset:0;
+      background:rgba(0,0,0,.55);
+      display:none;
+      align-items:center; justify-content:center;
+      padding:18px;
+      z-index:999;
     }
+    .modal{
+      width:min(560px, 100%);
+      border-radius:22px;
+      border:2px solid rgba(255,208,90,.55);
+      background:linear-gradient(180deg, rgba(25,5,8,.95), rgba(0,0,0,.75));
+      box-shadow:0 28px 80px rgba(0,0,0,.6);
+      padding:18px;
+      text-align:center;
+    }
+    .modal h2{
+      margin:6px 0 8px;
+      font-size:26px;
+      color:var(--gold);
+      text-shadow:0 10px 25px rgba(0,0,0,.45);
+    }
+    .modal .ticket{
+      margin:10px auto 8px;
+      font-family:var(--mono);
+      font-size:36px;
+      font-weight:1000;
+      color:var(--gold);
+      letter-spacing:4px;
+    }
+    .modal p{margin:0; color:rgba(255,255,255,.82)}
   </style>
 </head>
 <body>
   <div class="frame">
     <header>
-      <h1>CHƯƠNG TRÌNH QUAY SỐ TẤT NIÊN</h1>
+      <h1>TIỆC TÂN NIÊN 2026</h1>
       <p>QUAY VÉ SỐ 6 SỐ • TRÚNG LÀ LOẠI KHỎI DANH SÁCH</p>
     </header>
 
@@ -267,7 +286,6 @@
             <button class="btn danger" id="btnReset">Reset</button>
           </div>
         </div>
-        <div class="pill">Phím: <span class="kbd">Space</span> quay/dừng</div>
 
         <div style="margin-top:10px; overflow:auto;">
           <table>
@@ -303,11 +321,11 @@
 
           <div class="row">
             <button class="btn" id="btnSpin">QUAY</button>
-            <button class="btn secondary" id="btnStop" disabled>DỪNG</button>
+            <button class="btn secondary" id="btnCancel" disabled>HỦY</button>
           </div>
 
-          <div class="meta">Còn <span id="statRemain">0</span> vé trong danh sách quay</div>
-          <div class="meta">Mỗi giải mặc định 1 vé • Trúng là tự remove khỏi danh sách</div>
+          <div class="meta" id="metaLine">Còn <span id="statRemain">0</span> vé trong danh sách quay</div>
+          <div class="meta">Chốt số tự động: dừng từng số một (mỗi số 10 giây)</div>
         </div>
       </section>
 
@@ -328,7 +346,7 @@ Ví dụ:
 999999
 45"></textarea>
 
-        <p class="hint">Trùng vé sẽ tự loại. Vé đã trúng sẽ bị remove khỏi danh sách quay. (Xóa ở bảng trúng sẽ trả vé về danh sách.)</p>
+        <p class="hint">Trùng vé sẽ tự loại. Vé đã trúng sẽ bị remove khỏi danh sách quay.</p>
 
         <div class="pill">Tổng nạp: <span id="statTotal">0</span> • Còn lại: <span id="statRemain2">0</span></div>
 
@@ -337,10 +355,27 @@ Ví dụ:
     </div>
   </div>
 
+  <!-- Modal -->
+  <div class="modalBack" id="modalBack">
+    <div class="modal">
+      <h2 id="modalTitle">Chúc mừng!</h2>
+      <p id="modalSub">Tiệc Tân Niên 2026</p>
+      <div class="ticket" id="modalTicket">000000</div>
+      <p id="modalTime" style="margin-top:6px; font-family:var(--mono); color:rgba(255,255,255,.75)"></p>
+      <div style="margin-top:14px">
+        <button class="btn" id="modalClose">ĐÓNG &amp; QUA GIẢI TIẾP</button>
+      </div>
+    </div>
+  </div>
+
   <script>
+    // ===== Config =====
+    const STOP_DELAY_MS = 10000; // 10s mỗi số dừng (đổi nhanh/chậm tại đây)
+    const ROLL_INTERVAL_MS = 55; // tốc độ nhảy số khi đang quay
+
     // ===== Utilities =====
     const $ = (id) => document.getElementById(id);
-    const LS_KEY = "lottery_ticket_pool_v1";
+    const LS_KEY = "lottery_ticket_pool_v2_tannien2026";
 
     const pad6 = (s) => String(s).replace(/\D/g,"").slice(0,6).padStart(6,"0");
     const nowStr = () => {
@@ -353,11 +388,6 @@ Ví dụ:
         "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"
       }[c]));
     }
-    function setDigits(str6){
-      const d = $("digits").children;
-      for(let i=0;i<6;i++) d[i].textContent = str6[i] ?? "0";
-    }
-
     function parseTickets(text){
       const lines = text.split(/\r?\n/).map(x=>x.trim()).filter(Boolean);
       const out = [];
@@ -365,7 +395,6 @@ Ví dụ:
         const code = pad6(line);
         if(code) out.push(code);
       }
-      // dedupe keep first
       const seen = new Set();
       return out.filter(c=>{
         if(seen.has(c)) return false;
@@ -373,23 +402,34 @@ Ví dụ:
         return true;
       });
     }
+    function pickRandom(arr){ return arr[Math.floor(Math.random()*arr.length)]; }
+    function prizeLabel(key){ return key === "G1" ? "Giải nhất" : (key === "G2" ? "Giải nhì" : "Giải ba"); }
 
-    function pickRandom(arr){
-      return arr[Math.floor(Math.random()*arr.length)];
+    function setDigitsFromStr(str6){
+      const digitEls = $("digits").children;
+      for(let i=0;i<6;i++) digitEls[i].textContent = str6[i] ?? "0";
     }
-
-    function prizeLabel(key){
-      return key === "G1" ? "Giải nhất" : (key === "G2" ? "Giải nhì" : "Giải ba");
+    function setLockedClasses(lockedMask){
+      const digitEls = $("digits").children;
+      for(let i=0;i<6;i++){
+        digitEls[i].classList.toggle("locked", lockedMask[i] === true);
+      }
     }
 
     // ===== State =====
     const state = {
-      pool: [],        // remaining tickets
-      totalLoaded: 0,  // count loaded from textarea
-      winners: [],     // {prizeKey, prizeName, ticket, time}
+      pool: [],
+      totalLoaded: 0,
+      winners: [],
+
       spinning: false,
-      timer: null,
-      preview: "000000"
+      rollTimer: null,
+      previewTicket: "000000",
+
+      finalTicket: null,
+      lockedMask: [false,false,false,false,false,false],
+      stopTimeouts: [],
+      cancelRequested: false,
     };
 
     function save(){
@@ -455,7 +495,6 @@ Ví dụ:
         tb.appendChild(tr);
       });
 
-      // bind delete
       tb.querySelectorAll("button[data-del]").forEach(btn=>{
         btn.addEventListener("click", ()=>{
           const idx = parseInt(btn.getAttribute("data-del"), 10);
@@ -464,99 +503,228 @@ Ví dụ:
       });
     }
 
-    // ===== Core actions =====
+    // ===== Modal =====
+    function openModal(prizeKey, ticket, time){
+      $("modalTitle").textContent = `🎉 Chúc mừng ${prizeLabel(prizeKey)}!`;
+      $("modalSub").textContent = "Tiệc Tân Niên 2026";
+      $("modalTicket").textContent = ticket;
+      $("modalTime").textContent = time;
+      $("modalBack").style.display = "flex";
+    }
+    function closeModal(){
+      $("modalBack").style.display = "none";
+    }
+
+    // ===== Actions =====
     function saveTicketsFromTextarea(){
+      if(state.spinning) return;
+
       const tickets = parseTickets($("inputTickets").value);
-      // Remove tickets already won (to keep invariant)
       const wonSet = new Set(state.winners.map(w=>w.ticket));
-      const pool = tickets.filter(t => !wonSet.has(t));
-      state.pool = pool;
+      state.pool = tickets.filter(t => !wonSet.has(t));
       state.totalLoaded = tickets.length;
+
       save();
       renderPool();
       renderWinners();
-      setDigits("000000");
+      resetDigitsUI();
     }
 
-    function startSpin(){
+    function resetDigitsUI(){
+      state.lockedMask = [false,false,false,false,false,false];
+      setLockedClasses(state.lockedMask);
+      setDigitsFromStr("000000");
+    }
+
+    function clearStopTimeouts(){
+      state.stopTimeouts.forEach(t => clearTimeout(t));
+      state.stopTimeouts = [];
+    }
+
+    function startSpinAutoStop(){
       if(state.spinning) return;
       if(state.pool.length === 0){
         alert("Danh sách quay đang trống. Nhập vé và bấm LƯU trước.");
         return;
       }
+
+      // chọn vé thật từ danh sách (để chốt đúng vé tồn tại)
+      const finalTicket = pickRandom(state.pool);
+      state.finalTicket = finalTicket;
+
+      state.cancelRequested = false;
       state.spinning = true;
       $("btnSpin").disabled = true;
-      $("btnStop").disabled = false;
+      $("btnCancel").disabled = false;
+      $("prizeSelect").disabled = true;
+      $("btnSave").disabled = true;
+      $("btnDemo").disabled = true;
 
-      state.timer = setInterval(()=>{
-        state.preview = pickRandom(state.pool);
-        setDigits(state.preview);
-      }, 55);
+      // reset lock
+      state.lockedMask = [false,false,false,false,false,false];
+      setLockedClasses(state.lockedMask);
+
+      // nhảy số: mỗi digit chưa lock thì random; digit lock thì giữ theo finalTicket
+      state.rollTimer = setInterval(()=>{
+        if(state.cancelRequested) return;
+
+        const current = [];
+        for(let i=0;i<6;i++){
+          if(state.lockedMask[i]){
+            current.push(finalTicket[i]);
+          }else{
+            current.push(String(Math.floor(Math.random()*10)));
+          }
+        }
+        state.previewTicket = current.join("");
+        setDigitsFromStr(state.previewTicket);
+      }, ROLL_INTERVAL_MS);
+
+      // lịch dừng từng số
+      clearStopTimeouts();
+      for(let i=0;i<6;i++){
+        const t = setTimeout(()=>{
+          if(state.cancelRequested) return;
+          state.lockedMask[i] = true;
+          setLockedClasses(state.lockedMask);
+
+          // ép hiển thị đúng số đã chốt tại digit i
+          const forced = state.previewTicket.split("");
+          forced[i] = finalTicket[i];
+          state.previewTicket = forced.join("");
+          setDigitsFromStr(state.previewTicket);
+
+          // nếu là digit cuối -> kết thúc vòng quay
+          if(i === 5){
+            finalizeRound();
+          }
+        }, STOP_DELAY_MS * (i + 1));
+        state.stopTimeouts.push(t);
+      }
     }
 
-    function stopSpin(){
-      if(!state.spinning) return;
-      state.spinning = false;
-      $("btnSpin").disabled = false;
-      $("btnStop").disabled = true;
-      clearInterval(state.timer);
-      state.timer = null;
+    function finalizeRound(){
+      if(state.cancelRequested) return;
 
-      // chốt vé
-      const finalTicket = state.preview || pickRandom(state.pool);
-      if(!finalTicket) return;
+      // stop rolling
+      clearInterval(state.rollTimer);
+      state.rollTimer = null;
+      clearStopTimeouts();
+
+      const key = $("prizeSelect").value;
+      const time = nowStr();
+      const ticket = state.finalTicket;
 
       // remove khỏi pool
-      state.pool = state.pool.filter(t => t !== finalTicket);
+      state.pool = state.pool.filter(t => t !== ticket);
 
-      // push sang winners
-      const key = $("prizeSelect").value;
-      const win = {
+      // push winners
+      state.winners.push({
         prizeKey: key,
         prizeName: prizeLabel(key),
-        ticket: finalTicket,
-        time: nowStr()
-      };
-      state.winners.push(win);
+        ticket,
+        time
+      });
 
+      // persist + render
       save();
       renderPool();
       renderWinners();
+
+      // show modal
+      openModal(key, ticket, time);
+
+      // end state
+      state.spinning = false;
+      $("btnSpin").disabled = true; // chờ đóng modal mới cho quay tiếp
+      $("btnCancel").disabled = true;
+    }
+
+    function cancelSpin(){
+      if(!state.spinning) return;
+      state.cancelRequested = true;
+
+      clearInterval(state.rollTimer);
+      state.rollTimer = null;
+      clearStopTimeouts();
+
+      state.spinning = false;
+      state.finalTicket = null;
+
+      $("btnSpin").disabled = false;
+      $("btnCancel").disabled = true;
+      $("prizeSelect").disabled = false;
+      $("btnSave").disabled = false;
+      $("btnDemo").disabled = false;
+
+      resetDigitsUI();
+    }
+
+    function moveToNextPrize(){
+      const order = ["G1","G2","G3"];
+      const cur = $("prizeSelect").value;
+      const idx = order.indexOf(cur);
+      const next = order[Math.min(idx + 1, order.length - 1)];
+      $("prizeSelect").value = next;
+    }
+
+    function onModalClose(){
+      closeModal();
+
+      // enable UI back
+      $("prizeSelect").disabled = false;
+      $("btnSave").disabled = false;
+      $("btnDemo").disabled = false;
+
+      // chuyển giải tiếp theo (nếu chưa tới G3)
+      const cur = $("prizeSelect").value;
+      if(cur !== "G3") moveToNextPrize();
+
+      // sẵn sàng quay tiếp nếu còn vé
+      $("btnSpin").disabled = state.pool.length === 0;
+      $("btnCancel").disabled = true;
+      resetDigitsUI();
     }
 
     function deleteWinner(idx){
-      // xóa khỏi bảng trúng -> trả vé về pool (nếu chưa có trong pool)
+      if(state.spinning) return;
+
       const w = state.winners[idx];
       if(!w) return;
       state.winners.splice(idx, 1);
 
-      // trả vé về pool nếu vé đó có nằm trong “tổng nạp” hiện tại (để tránh lẫn)
-      // ở đây mình cứ trả về pool luôn nếu chưa tồn tại
+      // trả vé về pool nếu chưa tồn tại
       if(!state.pool.includes(w.ticket)){
         state.pool.push(w.ticket);
-        // giữ pool gọn
         state.pool.sort();
       }
       save();
       renderPool();
       renderWinners();
+
+      if(state.pool.length > 0) $("btnSpin").disabled = false;
     }
 
     function resetAll(){
-      if(state.timer) clearInterval(state.timer);
-      state.spinning=false;
-      state.timer=null;
-      state.preview="000000";
-      state.pool=[];
-      state.totalLoaded=0;
-      state.winners=[];
+      if(state.rollTimer) clearInterval(state.rollTimer);
+      clearStopTimeouts();
+      state.spinning = false;
+      state.cancelRequested = false;
+      state.finalTicket = null;
+      state.pool = [];
+      state.totalLoaded = 0;
+      state.winners = [];
       localStorage.removeItem(LS_KEY);
-      $("inputTickets").value="";
-      setDigits("000000");
-      $("btnSpin").disabled=false;
-      $("btnStop").disabled=true;
+      $("inputTickets").value = "";
+      $("btnSpin").disabled = false;
+      $("btnCancel").disabled = true;
+      $("prizeSelect").disabled = false;
+      $("btnSave").disabled = false;
+      $("btnDemo").disabled = false;
+      resetDigitsUI();
       renderPool();
       renderWinners();
+      closeModal();
     }
 
     function exportCSV(){
@@ -566,15 +734,16 @@ Ví dụ:
       const blob = new Blob([csv], {type:"text/csv;charset=utf-8"});
       const a = document.createElement("a");
       a.href = URL.createObjectURL(blob);
-      a.download = `ket-qua-ve-so-${new Date().toISOString().slice(0,10)}.csv`;
+      a.download = `ket-qua-tan-nien-2026-${new Date().toISOString().slice(0,10)}.csv`;
       a.click();
       URL.revokeObjectURL(a.href);
     }
 
     // ===== Wire up =====
     $("btnSave").addEventListener("click", saveTicketsFromTextarea);
-    $("btnSpin").addEventListener("click", startSpin);
-    $("btnStop").addEventListener("click", stopSpin);
+    $("btnSpin").addEventListener("click", startSpinAutoStop);
+    $("btnCancel").addEventListener("click", cancelSpin);
+
     $("btnReset").addEventListener("click", ()=>{
       if(confirm("Reset sẽ xóa danh sách vé + kết quả trúng. Tiếp tục?")) resetAll();
     });
@@ -582,21 +751,28 @@ Ví dụ:
 
     $("btnDemo").addEventListener("click", ()=>{
       $("inputTickets").value = [
-        "168",
-        "001234",
-        "999999",
-        "45",
-        "777777",
-        "888888",
-        "123",
-        "555555"
+        "095686","857075","291806","995146","945792",
+        "247182","736667","903610","447169","391806",
+        "907081","984763","783707","641214","750831",
+        "342997","000574","064845","067282","240114",
+        "449290","372021","525716","560046","360624",
+        "199682","091007","002649","265010","178228"
       ].join("\n");
     });
 
+    $("modalClose").addEventListener("click", onModalClose);
+
+    // phím Space = QUAY (chỉ khi không quay)
     window.addEventListener("keydown", (e)=>{
       if(e.code === "Space"){
         e.preventDefault();
-        if(state.spinning) stopSpin(); else startSpin();
+        if(!state.spinning && !$("modalBack").style.display.includes("flex")){
+          startSpinAutoStop();
+        }
+      }
+      if(e.key === "Escape"){
+        if(state.spinning) cancelSpin();
+        if($("modalBack").style.display === "flex") onModalClose();
       }
     });
 
@@ -604,10 +780,8 @@ Ví dụ:
     load();
     renderPool();
     renderWinners();
-    setDigits("000000");
-    if(state.totalLoaded && $("inputTickets").value.trim()===""){
-      // optional: show nothing; user can re-paste if wants
-    }
+    resetDigitsUI();
+    $("btnSpin").disabled = state.pool.length === 0;
   </script>
 </body>
 </html>

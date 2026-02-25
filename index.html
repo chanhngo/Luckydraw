@@ -27,11 +27,10 @@
         var(--bg-image) center top / cover no-repeat fixed,
         linear-gradient(180deg, rgba(0,0,0,.12), rgba(0,0,0,.52));
       min-height:100vh;
-      padding:12px; /* bớt padding để không bị trống 2 bên trên màn hẹp */
+      padding:12px;
       display:flex; justify-content:center;
     }
 
-    /* overlay nhẹ để card nổi nhưng không “chìm” */
     body::before{
       content:"";
       position:fixed; inset:0;
@@ -42,10 +41,9 @@
         linear-gradient(180deg, rgba(0,0,0,.08), rgba(0,0,0,.35));
     }
 
-    /* ===== FULL-WIDTH FRAME (demo cách 2) ===== */
     .frame{
       width:100%;
-      max-width:none;              /* không bó vào 1280 nữa */
+      max-width:none;
       border:2px solid rgba(255,216,107,.35);
       border-radius:24px;
       box-shadow:var(--shadow);
@@ -66,7 +64,7 @@
 
     .content{
       display:grid;
-      grid-template-columns: 1fr 1.2fr 1fr; /* cân lại để không bị “mất content” */
+      grid-template-columns: 1fr 1.2fr 1fr;
       gap:14px;
       padding:12px 14px 18px;
       align-items:stretch;
@@ -75,7 +73,6 @@
       .content{grid-template-columns:1fr; gap:12px;}
     }
 
-    /* ===== CARD: glass sáng hơn + gradient ===== */
     .card{
       border:1px solid rgba(255,255,255,.14);
       background:
@@ -108,7 +105,7 @@
       background:rgba(255,255,255,.08);
       color:rgba(255,255,255,.92);
       font-family:var(--mono);
-      margin:10px 0 10px; /* FIX: không dính với list */
+      margin:10px 0 10px; /* không dính với list */
     }
 
     .row{display:flex; gap:10px; align-items:center; flex-wrap:wrap}
@@ -149,7 +146,6 @@
     }
     .btn:disabled{opacity:.45; cursor:not-allowed}
 
-    /* center spin (dịch xuống giữa hơn) */
     .center{
       display:flex; flex-direction:column; align-items:center; gap:12px;
       padding-top:34px; /* dịch xuống */
@@ -196,7 +192,6 @@
       backdrop-filter: blur(6px);
     }
 
-    /* LOCKED (TRÚNG) nổi rõ hơn */
     .digit.locked{
       transform: translateY(-4px) scale(1.05);
       opacity: 1;
@@ -232,7 +227,7 @@
       max-height:320px;
       overflow:auto;
       padding-right:6px;
-      margin-top:8px; /* FIX: không dính pill */
+      margin-top:8px;
     }
 
     .item{
@@ -257,7 +252,6 @@
       color:rgba(255,255,255,.90);
     }
 
-    /* ===== WINNERS TABLE: không bị “đẩy ngang / tràn” ===== */
     .tableWrap{
       margin-top:10px;
       overflow:auto;
@@ -269,7 +263,7 @@
       border-collapse:separate;
       border-spacing:0 8px;
       font-size:13px;
-      table-layout: fixed; /* FIX: không giãn bậy */
+      table-layout: fixed;
     }
 
     th{
@@ -307,7 +301,6 @@
 
     .empty{padding:10px; color:var(--muted); font-size:12px}
 
-    /* Modal */
     .modalBack{
       position:fixed; inset:0;
       background:rgba(0,0,0,.55);
@@ -454,20 +447,20 @@ Ví dụ:
 
   <script>
     // ===== Config =====
-    const STOP_DELAY_MS = 5000;     // mỗi số dừng 5s
-    const ROLL_INTERVAL_MS = 50;    // tốc độ nhảy số
+    const STOP_DELAY_MS = 5000;
+    const ROLL_INTERVAL_MS = 50;
 
     // ===== MUSIC (NO UI) =====
-    // Đổi tên file theo ý bạn (đặt mp3 cùng thư mục HTML)
+    // Đặt file mp3 cùng thư mục HTML
     const MUSIC_PLAYLIST = [
       "music1.mp3",
       "music2.mp3",
       "music3.mp3",
     ];
-    const MUSIC_RANDOM_EACH_SPIN = true;
 
-    const LS_MUSIC_POS_KEY = "lottery_music_positions_v1";
-    const LS_MUSIC_LAST_KEY = "lottery_music_last_track_v1";
+    // Volume
+    const SPIN_VOL = 0.65;    // lúc quay
+    const WINNER_VOL = 0.18;  // lúc trúng (nhỏ xuống)
 
     // ===== Utilities =====
     const $ = (id) => document.getElementById(id);
@@ -517,115 +510,77 @@ Ví dụ:
       }
     }
 
-    // ===== MUSIC helpers =====
-    function loadMusicPositions(){
-      try{
-        const raw = localStorage.getItem(LS_MUSIC_POS_KEY);
-        const obj = raw ? JSON.parse(raw) : {};
-        return (obj && typeof obj === "object") ? obj : {};
-      }catch(e){
-        return {};
-      }
+    // ===== MUSIC logic (FIX: qua giải khác chọn bài khác + phát mới từ đầu) =====
+    const musicState = {
+      currentTrack: "",      // file đang phát
+      requestedTrack: "",    // file đang chuẩn bị
+    };
+
+    function musicEnabled(){
+      const cb = $("musicOn");
+      return cb ? cb.checked : true;
     }
-    function saveMusicPositions(pos){
-      try{ localStorage.setItem(LS_MUSIC_POS_KEY, JSON.stringify(pos)); }catch(e){}
-    }
-    function getLastTrack(){
-      try{ return localStorage.getItem(LS_MUSIC_LAST_KEY) || ""; }catch(e){ return ""; }
-    }
-    function setLastTrack(t){
-      try{ localStorage.setItem(LS_MUSIC_LAST_KEY, t); }catch(e){}
-    }
+
     function pickRandomDifferent(list, current){
       if(!list || list.length === 0) return "";
       if(list.length === 1) return list[0];
       let pick = current;
       let guard = 0;
-      while(pick === current && guard < 20){
+      while(pick === current && guard < 30){
         pick = list[Math.floor(Math.random()*list.length)];
         guard++;
       }
       return pick || list[0];
     }
 
-    function prepareSpinMusicSource(){
+    // Chọn bài mới (khác bài hiện tại), load + phát từ đầu
+    function switchToNewRandomTrackAndPlay(){
+      if(!musicEnabled()) return;
+
       const a = $("spinMusic");
       if(!a) return;
       if(!MUSIC_PLAYLIST || MUSIC_PLAYLIST.length === 0) return;
 
-      const positions = loadMusicPositions();
-      const currentTrack = a.getAttribute("data-track") || "";
-      const lastTrack = getLastTrack() || currentTrack;
+      const next = pickRandomDifferent(MUSIC_PLAYLIST, musicState.currentTrack || "");
+      musicState.requestedTrack = next;
 
-      let chosen = lastTrack || MUSIC_PLAYLIST[0];
+      // Nếu trùng (playlist 1 bài) thì vẫn phát lại từ đầu
+      a.pause();
+      a.src = next;
+      a.load();
 
-      if(MUSIC_RANDOM_EACH_SPIN){
-        chosen = pickRandomDifferent(MUSIC_PLAYLIST, lastTrack || currentTrack);
-      }else{
-        chosen = lastTrack || MUSIC_PLAYLIST[0];
-      }
+      const tryPlay = () => {
+        // nếu trong lúc load có track khác được set thì bỏ
+        if(musicState.requestedTrack !== next) return;
 
-      if(chosen !== currentTrack){
-        a.src = chosen;
-        a.setAttribute("data-track", chosen);
-        setLastTrack(chosen);
+        musicState.currentTrack = next;
+        a.volume = SPIN_VOL;
+        // phát mới từ đầu
+        try { a.currentTime = 0; } catch(e) {}
+        a.play().catch(()=>{});
+      };
 
-        a.load();
-        a.onloadedmetadata = () => {
-          const t = Number(positions[chosen] || 0);
-          if(Number.isFinite(t) && t > 0 && t < (a.duration || Infinity)){
-            a.currentTime = t;
-          }
-        };
-      }else{
-        const t = Number(positions[chosen] || 0);
-        if(Number.isFinite(t) && t > 0 && a.currentTime < 0.2){
-          a.currentTime = t;
-        }
-      }
+      // đảm bảo play sau khi browser sẵn sàng
+      a.oncanplay = null;
+      a.oncanplay = tryPlay;
+
+      // fallback: nếu event không bắn (tùy browser), thử play sau 200ms
+      setTimeout(tryPlay, 200);
     }
 
-    let __lastSaveTs = 0;
-    function bindMusicProgressSaver(){
+    function duckMusicOnWinner(){
       const a = $("spinMusic");
       if(!a) return;
-
-      a.addEventListener("timeupdate", ()=>{
-        const now = Date.now();
-        if(now - __lastSaveTs < 1500) return;
-        __lastSaveTs = now;
-
-        const track = a.getAttribute("data-track") || a.src || "";
-        if(!track) return;
-
-        const positions = loadMusicPositions();
-        positions[track] = a.currentTime || 0;
-        saveMusicPositions(positions);
-      });
-
-      window.addEventListener("beforeunload", ()=>{
-        const track = a.getAttribute("data-track") || a.src || "";
-        if(!track) return;
-
-        const positions = loadMusicPositions();
-        positions[track] = a.currentTime || 0;
-        saveMusicPositions(positions);
-      });
+      if(!musicEnabled()) return;
+      a.volume = WINNER_VOL; // vẫn chạy tiếp
     }
 
-    function playSpinMusic(){
-      const on = $("musicOn") ? $("musicOn").checked : true;
-      if(!on) return;
+    function hardStopMusic(){
       const a = $("spinMusic");
       if(!a) return;
-      a.volume = 0.65;
-      a.play().catch(()=>{});
+      a.pause();
     }
-    function stopSpinMusic(){
-      const a = $("spinMusic");
-      if(!a) return;
-      a.pause(); // không reset -> lần sau play tiếp đoạn đang dở
-    }
+
     function playWinSfx(){
       const a = $("winSfx");
       if(!a) return;
@@ -701,16 +656,14 @@ Ví dụ:
       tb.innerHTML = "";
       $("winnerEmpty").style.display = state.winners.length ? "none" : "block";
 
-      // Ưu tiên hiển thị theo thứ tự giải: G1 -> G2 -> G3
       const prizeRank = { G1: 1, G2: 2, G3: 3 };
-
       const list = state.winners
         .map((w, idx) => ({ ...w, __idx: idx }))
         .sort((a, b) => {
           const ra = prizeRank[a.prizeKey] ?? 99;
           const rb = prizeRank[b.prizeKey] ?? 99;
           if(ra !== rb) return ra - rb;
-          return b.__idx - a.__idx; // cùng giải: mới nhất trước
+          return b.__idx - a.__idx;
         });
 
       list.forEach((w)=>{
@@ -790,9 +743,8 @@ Ví dụ:
       $("btnSave").disabled = true;
       $("btnDemo").disabled = true;
 
-      // MUSIC: random bài mỗi lần QUAY + resume theo từng bài
-      prepareSpinMusicSource();
-      playSpinMusic();
+      // MUSIC: mỗi lần QUAY chọn bài khác + PHÁT MỚI (không resume)
+      switchToNewRandomTrackAndPlay();
 
       state.lockedMask = [false,false,false,false,false,false];
       setLockedClasses(state.lockedMask);
@@ -812,7 +764,7 @@ Ví dụ:
       // DỪNG TỪ SỐ 6 -> SỐ 1 (index 5 -> 0)
       clearStopTimeouts();
       for(let step = 0; step < 6; step++){
-        const idx = 5 - step; // 5,4,3,2,1,0
+        const idx = 5 - step;
         const t = setTimeout(()=>{
           if(state.cancelRequested) return;
 
@@ -840,7 +792,8 @@ Ví dụ:
       state.rollTimer = null;
       clearStopTimeouts();
 
-      stopSpinMusic();
+      // FIX: KHÔNG pause nhạc lúc trúng — chỉ hạ volume xuống nhỏ
+      duckMusicOnWinner();
 
       const key = $("prizeSelect").value;
       const time = nowStr();
@@ -875,7 +828,8 @@ Ví dụ:
       state.rollTimer = null;
       clearStopTimeouts();
 
-      stopSpinMusic();
+      // Hủy thì dừng hẳn nhạc
+      hardStopMusic();
 
       state.spinning = false;
       state.finalTicket = null;
@@ -910,6 +864,7 @@ Ví dụ:
       $("btnSpin").disabled = (state.pool.length === 0);
       $("btnCancel").disabled = true;
       resetDigitsUI();
+      // Không cần đổi nhạc ở đây. Lần bấm QUAY kế tiếp sẽ tự chọn bài khác + phát mới.
     }
 
     function deleteWinner(idx){
@@ -933,7 +888,9 @@ Ví dụ:
     function resetAll(){
       if(state.rollTimer) clearInterval(state.rollTimer);
       clearStopTimeouts();
-      stopSpinMusic();
+
+      // reset thì dừng hẳn nhạc
+      hardStopMusic();
 
       state.spinning = false;
       state.cancelRequested = false;
@@ -1005,7 +962,6 @@ Ví dụ:
     });
 
     // init
-    bindMusicProgressSaver();
     load();
     renderPool();
     renderWinners();

@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>Tiệc Tân Niên 2026 - Quay Vé Số</title>
+  <title>Tiệc Tân Niên 2026 - Vòng quay may mắn</title>
   <style>
     :root{
       --bg1:#7a0b10; --bg2:#2a0206;
@@ -17,32 +17,23 @@
       --mono: ui-monospace,SFMono-Regular,Menlo,Monaco,Consolas,monospace;
       --sans: ui-sans-serif,system-ui,-apple-system,"Segoe UI",Roboto,Helvetica,Arial;
 
-      /* ===== BACKGROUND IMAGE PLACEHOLDER =====
-         Cách dùng:
-         - Bỏ 1 ảnh vào cùng thư mục, ví dụ: bg.jpg
-         - Đổi đường dẫn: url("bg.jpg")
-         - Nếu chưa có ảnh -> để NONE (mặc định vẫn chạy gradient)
-      */
+      /* ===== BACKGROUND IMAGE PLACEHOLDER ===== */
       --bg-image: none; /* ví dụ: url("bg.jpg") */
     }
 
     *{box-sizing:border-box}
     body{
       margin:0; font-family:var(--sans); color:var(--text);
-
-      /* Ưu tiên hình nền nếu bạn set --bg-image, nếu không thì chỉ có gradient */
       background:
         var(--bg-image) center/cover no-repeat fixed,
         radial-gradient(1200px 800px at 30% 10%, rgba(255,216,107,.22), transparent 60%),
         radial-gradient(1200px 800px at 75% 30%, rgba(255,0,0,.12), transparent 60%),
         linear-gradient(180deg, var(--bg1), #480409 55%, var(--bg2));
-
       min-height:100vh;
       padding:18px;
       display:flex; justify-content:center;
     }
 
-    /* lớp phủ để chữ nổi trên ảnh nền (khi bạn dùng bg.jpg) */
     body::before{
       content:"";
       position:fixed; inset:0;
@@ -60,6 +51,7 @@
       overflow:hidden;
       backdrop-filter: blur(2px);
     }
+
     header{ padding:18px 20px 10px; text-align:center; }
     header h1{
       margin:0; font-weight:900; letter-spacing:1px; font-size:36px;
@@ -68,6 +60,37 @@
     header p{
       margin:6px 0 0; font-size:18px; color:#7CFF5E; font-weight:800; letter-spacing:.5px;
       text-shadow:0 8px 25px rgba(0,0,0,.35);
+    }
+
+    /* ===== Logo header ===== */
+    .headerRow{
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      gap:14px;
+      flex-wrap:wrap;
+    }
+    .companyLogo{
+      width:72px;
+      height:72px;
+      border-radius:14px;
+      border:1px solid rgba(255,208,90,.55);
+      background:rgba(0,0,0,.18);
+      object-fit:contain;
+      box-shadow:0 10px 25px rgba(0,0,0,.35);
+    }
+    .logoPlaceholder{
+      width:72px;
+      height:72px;
+      border-radius:14px;
+      border:1px dashed rgba(255,208,90,.55);
+      background:rgba(0,0,0,.18);
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      font-family:var(--mono);
+      font-size:12px;
+      color:rgba(255,255,255,.75);
     }
 
     .content{
@@ -144,7 +167,6 @@
     }
     .btn:disabled{opacity:.45; cursor:not-allowed}
 
-    /* center spin */
     .center{
       display:flex; flex-direction:column; align-items:center; gap:12px; padding-top:6px;
     }
@@ -259,7 +281,6 @@
     }
     .empty{padding:10px; color:var(--muted); font-size:12px}
 
-    /* Modal */
     .modalBack{
       position:fixed; inset:0;
       background:rgba(0,0,0,.55);
@@ -297,12 +318,19 @@
 <body>
   <div class="frame">
     <header>
-      <h1>VIỆT PHÁP GROUP - TIỆC TÂN NIÊN 2026</h1>
-      <p>VÒNG QUAY MAY MẮN</p>
+      <div class="headerRow">
+        <img class="companyLogo" src="logo.png" alt="Logo công ty"
+             onerror="this.style.display='none'; document.getElementById('logoPh').style.display='flex';" />
+        <div class="logoPlaceholder" id="logoPh" style="display:none;">LOGO</div>
+
+        <div>
+          <h1>VIỆT PHÁP GROUP - TIỆC TÂN NIÊN 2026</h1>
+          <p>VÒNG QUAY MAY MẮN</p>
+        </div>
+      </div>
     </header>
 
     <div class="content">
-      <!-- LEFT: WINNERS TABLE -->
       <section class="card">
         <div class="topRow">
           <h3 style="margin:0">Danh sách trúng thưởng</h3>
@@ -328,7 +356,6 @@
         </div>
       </section>
 
-      <!-- CENTER: SPIN -->
       <section class="card">
         <div class="center">
           <h3 style="margin:0">Mã vé trúng thưởng</h3>
@@ -349,7 +376,6 @@
             <button class="btn secondary" id="btnCancel" disabled>HỦY</button>
           </div>
 
-          <!-- NEW: toggle nhạc -->
           <div class="row" style="margin-top:6px;">
             <label style="display:flex;gap:10px;align-items:center;cursor:pointer;font-family:var(--mono);color:rgba(255,255,255,.85)">
               <input type="checkbox" id="musicOn" checked />
@@ -361,7 +387,6 @@
         </div>
       </section>
 
-      <!-- RIGHT: INPUT + CURRENT POOL -->
       <section class="card">
         <div class="topRow">
           <h3 style="margin:0">Danh sách vé tham gia</h3>
@@ -387,7 +412,6 @@ Ví dụ:
     </div>
   </div>
 
-  <!-- Modal -->
   <div class="modalBack" id="modalBack">
     <div class="modal">
       <h2 id="modalTitle">Chúc mừng!</h2>
@@ -400,20 +424,13 @@ Ví dụ:
     </div>
   </div>
 
-  <!-- ===== AUDIO =====
-       Đặt file cùng thư mục:
-       - music.mp3 (nhạc xổ số lúc quay)
-       - win.mp3   (tuỳ chọn: âm thanh chúc mừng)
-  -->
   <audio id="spinMusic" src="music.mp3" preload="auto" loop></audio>
   <audio id="winSfx" src="win.mp3" preload="auto"></audio>
 
   <script>
-    // ===== Config =====
-    const STOP_DELAY_MS = 5000;     // mỗi số dừng 5s
-    const ROLL_INTERVAL_MS = 50;    // tốc độ nhảy số
+    const STOP_DELAY_MS = 5000;
+    const ROLL_INTERVAL_MS = 50;
 
-    // ===== Utilities =====
     const $ = (id) => document.getElementById(id);
     const LS_KEY = "lottery_ticket_pool_v2_tannien2026";
 
@@ -456,14 +473,12 @@ Ví dụ:
       }
     }
 
-    // ===== Audio controls =====
     function playSpinMusic(){
       const on = $("musicOn") ? $("musicOn").checked : true;
       if(!on) return;
       const a = $("spinMusic");
       if(!a) return;
       a.volume = 0.65;
-      // không reset currentTime để test/loop mượt; nhưng khi quay mới thì reset
       a.currentTime = 0;
       a.play().catch(()=>{});
     }
@@ -476,22 +491,18 @@ Ví dụ:
     function playWinSfx(){
       const a = $("winSfx");
       if(!a) return;
-      // nếu bạn không có win.mp3 thì browser sẽ bỏ qua (console có thể báo 404 trên Pages)
       a.volume = 0.9;
       a.currentTime = 0;
       a.play().catch(()=>{});
     }
 
-    // ===== State =====
     const state = {
       pool: [],
       totalLoaded: 0,
       winners: [],
-
       spinning: false,
       rollTimer: null,
       previewTicket: "000000",
-
       finalTicket: null,
       lockedMask: [false,false,false,false,false,false],
       stopTimeouts: [],
@@ -516,7 +527,6 @@ Ví dụ:
       }catch(e){}
     }
 
-    // ===== Render =====
     function renderPool(){
       $("statTotal").textContent = state.totalLoaded;
       $("statRemain").textContent = state.pool.length;
@@ -569,7 +579,6 @@ Ví dụ:
       });
     }
 
-    // ===== Modal =====
     function openModal(prizeKey, ticket, time){
       $("modalTitle").textContent = `🎉 Chúc mừng ${prizeLabel(prizeKey)}!`;
       $("modalSub").textContent = "Tiệc Tân Niên 2026";
@@ -581,7 +590,6 @@ Ví dụ:
       $("modalBack").style.display = "none";
     }
 
-    // ===== Actions =====
     function saveTicketsFromTextarea(){
       if(state.spinning) return;
 
@@ -615,7 +623,6 @@ Ví dụ:
         return;
       }
 
-      // chọn vé thật từ danh sách (để chốt đúng vé tồn tại)
       const finalTicket = pickRandom(state.pool);
       state.finalTicket = finalTicket;
 
@@ -628,14 +635,11 @@ Ví dụ:
       $("btnSave").disabled = true;
       $("btnDemo").disabled = true;
 
-      // bật nhạc khi quay
       playSpinMusic();
 
-      // reset lock
       state.lockedMask = [false,false,false,false,false,false];
       setLockedClasses(state.lockedMask);
 
-      // nhảy số: mỗi digit chưa lock thì random; digit lock thì giữ theo finalTicket
       state.rollTimer = setInterval(()=>{
         if(state.cancelRequested) return;
 
@@ -651,25 +655,26 @@ Ví dụ:
         setDigitsFromStr(state.previewTicket);
       }, ROLL_INTERVAL_MS);
 
-      // lịch dừng từng số
+      // ===== DỪNG TỪ SỐ 6 -> SỐ 1 (index 5 -> 0) =====
       clearStopTimeouts();
-      for(let i=0;i<6;i++){
+      for(let step = 0; step < 6; step++){
+        const idx = 5 - step; // 5,4,3,2,1,0
         const t = setTimeout(()=>{
           if(state.cancelRequested) return;
-          state.lockedMask[i] = true;
+
+          state.lockedMask[idx] = true;
           setLockedClasses(state.lockedMask);
 
-          // ép hiển thị đúng số đã chốt tại digit i
           const forced = state.previewTicket.split("");
-          forced[i] = finalTicket[i];
+          forced[idx] = finalTicket[idx];
           state.previewTicket = forced.join("");
           setDigitsFromStr(state.previewTicket);
 
-          // nếu là digit cuối -> kết thúc vòng quay
-          if(i === 5){
+          if(idx === 0){
             finalizeRound();
           }
-        }, STOP_DELAY_MS * (i + 1));
+        }, STOP_DELAY_MS * (step + 1));
+
         state.stopTimeouts.push(t);
       }
     }
@@ -677,7 +682,6 @@ Ví dụ:
     function finalizeRound(){
       if(state.cancelRequested) return;
 
-      // stop rolling + stop music
       clearInterval(state.rollTimer);
       state.rollTimer = null;
       clearStopTimeouts();
@@ -687,10 +691,8 @@ Ví dụ:
       const time = nowStr();
       const ticket = state.finalTicket;
 
-      // remove khỏi pool
       state.pool = state.pool.filter(t => t !== ticket);
 
-      // push winners
       state.winners.push({
         prizeKey: key,
         prizeName: prizeLabel(key),
@@ -698,20 +700,15 @@ Ví dụ:
         time
       });
 
-      // persist + render
       save();
       renderPool();
       renderWinners();
 
-      // sfx chúc mừng (tuỳ chọn)
       playWinSfx();
-
-      // show modal
       openModal(key, ticket, time);
 
-      // end state
       state.spinning = false;
-      $("btnSpin").disabled = true; // chờ đóng modal mới cho quay tiếp
+      $("btnSpin").disabled = true;
       $("btnCancel").disabled = true;
     }
 
@@ -748,16 +745,13 @@ Ví dụ:
     function onModalClose(){
       closeModal();
 
-      // enable UI back
       $("prizeSelect").disabled = false;
       $("btnSave").disabled = false;
       $("btnDemo").disabled = false;
 
-      // chuyển giải tiếp theo (nếu chưa tới G3)
       const cur = $("prizeSelect").value;
       if(cur !== "G3") moveToNextPrize();
 
-      // sẵn sàng quay tiếp nếu còn vé
       $("btnSpin").disabled = (state.pool.length === 0);
       $("btnCancel").disabled = true;
       resetDigitsUI();
@@ -770,7 +764,6 @@ Ví dụ:
       if(!w) return;
       state.winners.splice(idx, 1);
 
-      // trả vé về pool nếu chưa tồn tại
       if(!state.pool.includes(w.ticket)){
         state.pool.push(w.ticket);
         state.pool.sort();
@@ -820,7 +813,6 @@ Ví dụ:
       URL.revokeObjectURL(a.href);
     }
 
-    // ===== Wire up =====
     $("btnSave").addEventListener("click", saveTicketsFromTextarea);
     $("btnSpin").addEventListener("click", startSpinAutoStop);
     $("btnCancel").addEventListener("click", cancelSpin);
@@ -843,15 +835,6 @@ Ví dụ:
 
     $("modalClose").addEventListener("click", onModalClose);
 
-    // Test nhạc (bật/tắt)
-    $("btnTestMusic").addEventListener("click", ()=>{
-      const a = $("spinMusic");
-      if(!a) return;
-      if(a.paused) playSpinMusic();
-      else stopSpinMusic();
-    });
-
-    // phím Space = QUAY (chỉ khi không quay)
     window.addEventListener("keydown", (e)=>{
       if(e.code === "Space"){
         e.preventDefault();
@@ -865,7 +848,6 @@ Ví dụ:
       }
     });
 
-    // ===== Init =====
     load();
     renderPool();
     renderWinners();

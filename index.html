@@ -556,23 +556,49 @@ Ví dụ:
     }
 
     function playSpinMusic(){
-      const on = $("musicOn") ? $("musicOn").checked : true;
-      if(!on) return;
+  const on = $("musicOn") ? $("musicOn").checked : true;
+  if(!on) return;
 
-      const a = $("spinMusic");
-      if(!a) return;
+  const a = $("spinMusic");
+  if(!a) return;
 
-      const track = pickRandomTrack(SPIN_TRACKS, lastSpinTrack);
-      lastSpinTrack = track;
+  a.pause();
+  a.currentTime = 0;
 
-      // đổi bài mỗi lần quay
-      a.src = track;
-      a.load();
+  let tries = 0;
 
-      setSpinMusicVolume(0.65);     // âm lượng lúc đang quay (tự chỉnh)
+  const attempt = (avoidTrack) => {
+    const track = pickRandomTrack(SPIN_TRACKS, avoidTrack);
+    lastSpinTrack = track;
+
+    a.src = track;
+    a.load();
+    setSpinMusicVolume(0.65);
+
+    const doPlay = () => {
+      a.oncanplay = null;
+      a.oncanplaythrough = null;
+      a.onerror = null;
       a.currentTime = 0;
       a.play().catch(()=>{});
+    };
+
+    a.onerror = () => {
+      tries++;
+      if(tries < Math.min(3, SPIN_TRACKS.length)){
+        attempt(track);
+      }
+    };
+
+    if(a.readyState >= 3) doPlay();
+    else{
+      a.oncanplay = doPlay;
+      a.oncanplaythrough = doPlay;
     }
+  };
+
+  attempt(lastSpinTrack);
+}
 
     function lowerSpinMusicAfterWin(){
       const on = $("musicOn") ? $("musicOn").checked : true;

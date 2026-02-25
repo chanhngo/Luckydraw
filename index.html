@@ -325,7 +325,7 @@
           </div>
 
           <div class="meta" id="metaLine">Còn <span id="statRemain">0</span> vé trong danh sách quay</div>
-          <div class="meta">Chốt số tự động: dừng từng số một (mỗi số 10 giây)</div>
+          <div class="meta">Chốt số tự động: dừng từng số một (mỗi số 5 giây)</div>
         </div>
       </section>
 
@@ -370,8 +370,8 @@ Ví dụ:
 
   <script>
     // ===== Config =====
-    const STOP_DELAY_MS = 10000; // 10s mỗi số dừng (đổi nhanh/chậm tại đây)
-    const ROLL_INTERVAL_MS = 55; // tốc độ nhảy số khi đang quay
+    const STOP_DELAY_MS = 5000; // 10s mỗi số dừng (đổi nhanh/chậm tại đây)
+    const ROLL_INTERVAL_MS = 50; // tốc độ nhảy số khi đang quay
 
     // ===== Utilities =====
     const $ = (id) => document.getElementById(id);

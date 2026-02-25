@@ -173,7 +173,7 @@
     .btn:disabled{opacity:.45; cursor:not-allowed}
 
     .center{
-      display:flex; flex-direction:column; align-items:center; gap:12px; padding-top:6px;
+      display:flex; flex-direction:column; align-items:center; gap:12px; padding-top:28px;
     }
     select{
       width:min(360px, 100%);
@@ -322,6 +322,34 @@
       letter-spacing:4px;
     }
     .modal p{margin:0; color:rgba(255,255,255,.82)}
+    /* ===== LOGO NỔI HƠN ===== */
+.companyLogo,
+.logoPlaceholder{
+  background: linear-gradient(180deg, rgba(0,0,0,.55), rgba(0,0,0,.25));
+  border: 1px solid rgba(255,216,107,.55);
+  box-shadow:
+    0 10px 25px rgba(0,0,0,.55),
+    0 0 0 2px rgba(255,216,107,.18),
+    0 0 22px rgba(255,216,107,.18);
+}
+
+.companyLogo{
+  padding:8px;              /* tạo “khung” cho logo */
+  backdrop-filter: blur(2px);
+}
+    /* ===== LOCKED (TRÚNG) NỔI RÕ HƠN ===== */
+.digit.locked{
+  transform: translateY(-3px) scale(1.03);
+  opacity: 1;
+  border: 2px solid rgba(255,216,107,.75);
+  background: linear-gradient(180deg, rgba(255,216,107,.14), rgba(0,0,0,.38));
+  box-shadow:
+    0 0 0 2px rgba(255,216,107,.20),
+    0 18px 60px rgba(0,0,0,.55),
+    0 0 26px rgba(255,216,107,.35);
+  outline: none; /* bỏ outline cũ nếu có */
+  filter: none;  /* bỏ drop-shadow cũ nếu có */
+}
   </style>
 </head>
 <body>
@@ -564,31 +592,45 @@ Ví dụ:
     }
 
     function renderWinners(){
-      const tb = $("winnerTbody");
-      tb.innerHTML = "";
-      $("winnerEmpty").style.display = state.winners.length ? "none" : "block";
+  const tb = $("winnerTbody");
+  tb.innerHTML = "";
+  $("winnerEmpty").style.display = state.winners.length ? "none" : "block";
 
-      state.winners.slice().reverse().forEach((w, idxRev)=>{
-        const tr = document.createElement("tr");
-        tr.innerHTML = `
-          <td>${escapeHtml(w.prizeName)}</td>
-          <td><b style="color:var(--gold); font-size:14px">${escapeHtml(w.ticket)}</b></td>
-          <td style="color:rgba(255,255,255,.75)">${escapeHtml(w.time)}</td>
-          <td style="text-align:right">
-            <button class="btn danger" data-del="${state.winners.length - 1 - idxRev}">XÓA</button>
-          </td>
-        `;
-        tb.appendChild(tr);
-      });
+  // Ưu tiên hiển thị theo thứ tự giải: G1 -> G2 -> G3
+  const prizeRank = { G1: 1, G2: 2, G3: 3 };
 
-      tb.querySelectorAll("button[data-del]").forEach(btn=>{
-        btn.addEventListener("click", ()=>{
-          const idx = parseInt(btn.getAttribute("data-del"), 10);
-          deleteWinner(idx);
-        });
-      });
-    }
+  // Copy + sort: theo prize trước, rồi theo thời gian (mới nhất trước)
+  const list = state.winners
+    .map((w, idx) => ({ ...w, __idx: idx })) // giữ index gốc để xóa đúng
+    .sort((a, b) => {
+      const ra = prizeRank[a.prizeKey] ?? 99;
+      const rb = prizeRank[b.prizeKey] ?? 99;
+      if(ra !== rb) return ra - rb;
 
+      // cùng giải: mới nhất trước (dựa trên index push)
+      return b.__idx - a.__idx;
+    });
+
+  list.forEach((w)=>{
+    const tr = document.createElement("tr");
+    tr.innerHTML = `
+      <td>${escapeHtml(w.prizeName)}</td>
+      <td><b style="color:var(--gold); font-size:14px">${escapeHtml(w.ticket)}</b></td>
+      <td style="color:rgba(255,255,255,.75)">${escapeHtml(w.time)}</td>
+      <td style="text-align:right">
+        <button class="btn danger" data-del="${w.__idx}">XÓA</button>
+      </td>
+    `;
+    tb.appendChild(tr);
+  });
+
+  tb.querySelectorAll("button[data-del]").forEach(btn=>{
+    btn.addEventListener("click", ()=>{
+      const idx = parseInt(btn.getAttribute("data-del"), 10);
+      deleteWinner(idx);
+    });
+  });
+}
     function openModal(prizeKey, ticket, time){
       $("modalTitle").textContent = `🎉 Chúc mừng ${prizeLabel(prizeKey)}!`;
       $("modalSub").textContent = "Tiệc Tân Niên 2026";

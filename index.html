@@ -433,10 +433,11 @@
           <div class="center">
             <h3 style="margin:0">Mã vé trúng thưởng</h3>
 
+            <!-- mặc định chọn Giải ba -->
             <select id="prizeSelect">
               <option value="G1">🏆 Giải nhất</option>
               <option value="G2">🥈 Giải nhì</option>
-              <option value="G3">🥉 Giải ba</option>
+              <option value="G3" selected>🥉 Giải ba</option>
             </select>
 
             <div class="digits" id="digits">
@@ -505,14 +506,19 @@ Ví dụ:
   <audio id="winSfx" src="win.mp3" preload="auto"></audio>
 
 <script>
-  // ===== QUAY 10s, NỔ 6 SỐ 1 LẦN =====
-  const SPIN_DURATION_MS = 10000;  // 10s
-  const ROLL_INTERVAL_MS = 50;
+  // ===== QUAY: G1 = 20s, còn lại = 10s; NỔ 6 SỐ 1 LẦN =====
+  const SPIN_DURATION_MS_DEFAULT = 10000; // 10s
+  const SPIN_DURATION_MS_G1 = 20000;      // 20s (Giải nhất)
+  const ROLL_INTERVAL_MS = 55;
 
   const $ = (id) => document.getElementById(id);
   const LS_KEY = "lottery_ticket_pool_v2_tannien2026";
 
   const pad6 = (s) => String(s).replace(/\D/g,"").slice(0,6).padStart(6,"0");
+
+  function getSpinDurationMsByPrize(prizeKey){
+    return prizeKey === "G1" ? SPIN_DURATION_MS_G1 : SPIN_DURATION_MS_DEFAULT;
+  }
 
   // ===== MUSIC =====
   const SPIN_TRACKS = ["music1.mp3", "music2.mp3", "music3.mp3"];
@@ -852,6 +858,9 @@ Ví dụ:
       return;
     }
 
+    const prizeKey = $("prizeSelect").value;
+    const durationMs = getSpinDurationMsByPrize(prizeKey);
+
     const finalTicket = pickRandom(state.pool);
     state.finalTicket = finalTicket;
 
@@ -864,10 +873,10 @@ Ví dụ:
     $("btnSave").disabled = true;
     $("btnDemo").disabled = true;
 
-    state.prizeStartKey = $("prizeSelect").value;
+    state.prizeStartKey = prizeKey;
     state.prizeOrder = getPrizeOrderFromStart(state.prizeStartKey);
 
-    // warmup + play (warmup đã được gọi ở click handler, nhưng gọi thêm cũng không sao)
+    // warmup + play
     warmupSpinMusic();
     playSpinMusic();
 
@@ -893,7 +902,7 @@ Ví dụ:
       setLockedClasses(state.lockedMask);
 
       finalizeRound();
-    }, SPIN_DURATION_MS);
+    }, durationMs);
 
     state.stopTimeouts.push(t);
   }
@@ -1046,7 +1055,7 @@ Ví dụ:
     URL.revokeObjectURL(a.href);
   }
 
-  // ===== EVENT: GỌI warmup SAU CLICK để “prime” decode =====
+  // ===== EVENT: GỌI warmup SAU CLICK/KEYDOWN để “prime” decode =====
   $("btnSave").addEventListener("click", ()=>{
     warmupSpinMusic();
     saveTicketsFromTextarea();
@@ -1082,7 +1091,6 @@ Ví dụ:
   window.addEventListener("keydown", (e)=>{
     if(e.code === "Space"){
       e.preventDefault();
-      // Space cũng là gesture => warmup rồi quay
       if(!state.spinning && $("modalBack").style.display !== "flex"){
         warmupSpinMusic();
         startSpinAutoStop();

@@ -658,6 +658,16 @@ Ví dụ:
       a.play().catch(()=>{});
     }
 
+    // ===== CHỈ SỬA CƠ CHẾ QUA GIẢI (KHÔNG ĐỤNG BẢNG WINNERS) =====
+    function getPrizeOrderFromStart(startKey){
+      if(startKey === "G1") return ["G1","G2","G3"];
+      if(startKey === "G3") return ["G3","G2","G1"];
+      return ["G2","G1","G3"]; // nếu bắt đầu từ Giải nhì
+    }
+    function getCurrentPrizeOrder(){
+      return (state.prizeOrder && state.prizeOrder.length) ? state.prizeOrder : getPrizeOrderFromStart($("prizeSelect").value);
+    }
+
     const state = {
       pool: [],
       totalLoaded: 0,
@@ -669,6 +679,10 @@ Ví dụ:
       lockedMask: [false,false,false,false,false,false],
       stopTimeouts: [],
       cancelRequested: false,
+
+      // NEW: order quay theo option chọn lúc bắt đầu
+      prizeOrder: null,
+      prizeStartKey: null,
     };
 
     function save(){
@@ -805,6 +819,10 @@ Ví dụ:
       $("btnSave").disabled = true;
       $("btnDemo").disabled = true;
 
+      // NEW: chốt thứ tự qua giải theo option đang chọn lúc bắt đầu quay
+      state.prizeStartKey = $("prizeSelect").value;
+      state.prizeOrder = getPrizeOrderFromStart(state.prizeStartKey);
+
       playSpinMusic();
 
       state.lockedMask = [false,false,false,false,false,false];
@@ -892,6 +910,10 @@ Ví dụ:
       state.spinning = false;
       state.finalTicket = null;
 
+      // NEW: hủy thì reset order để lần sau chọn lại tùy ý
+      state.prizeOrder = null;
+      state.prizeStartKey = null;
+
       $("btnSpin").disabled = (state.pool.length === 0);
       $("btnCancel").disabled = true;
       $("prizeSelect").disabled = false;
@@ -901,11 +923,12 @@ Ví dụ:
       resetDigitsUI();
     }
 
+    // NEW: qua giải theo thứ tự đã chốt (chỉ ảnh hưởng prizeSelect, không ảnh hưởng bảng winners)
     function moveToNextPrize(){
-      const order = ["G1","G2","G3"];
+      const order = getCurrentPrizeOrder();
       const cur = $("prizeSelect").value;
       const idx = order.indexOf(cur);
-      const next = order[Math.min(idx + 1, order.length - 1)];
+      const next = order[Math.min((idx < 0 ? 0 : idx + 1), order.length - 1)];
       $("prizeSelect").value = next;
     }
 
@@ -919,8 +942,16 @@ Ví dụ:
       $("btnSave").disabled = false;
       $("btnDemo").disabled = false;
 
+      const order = getCurrentPrizeOrder();
       const cur = $("prizeSelect").value;
-      if(cur !== "G3") moveToNextPrize();
+
+      if(cur !== order[order.length - 1]){
+        moveToNextPrize();
+      }else{
+        // tới cuối chuỗi thì reset order, để lần sau chọn lại theo ý người điều khiển
+        state.prizeOrder = null;
+        state.prizeStartKey = null;
+      }
 
       $("btnSpin").disabled = (state.pool.length === 0);
       $("btnCancel").disabled = true;
@@ -957,6 +988,10 @@ Ví dụ:
       state.totalLoaded = 0;
       state.winners = [];
       localStorage.removeItem(LS_KEY);
+
+      // NEW: reset order
+      state.prizeOrder = null;
+      state.prizeStartKey = null;
 
       $("inputTickets").value = "";
       $("btnSpin").disabled = false;

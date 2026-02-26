@@ -504,549 +504,601 @@ Ví dụ:
   <audio id="spinMusic" preload="auto" loop></audio>
   <audio id="winSfx" src="win.mp3" preload="auto"></audio>
 
-  <script>
-    // ===== QUAY 10s, NỔ 6 SỐ 1 LẦN =====
-    const SPIN_DURATION_MS = 10000;  // 10s
-    const ROLL_INTERVAL_MS = 50;
+<script>
+  // ===== QUAY 10s, NỔ 6 SỐ 1 LẦN =====
+  const SPIN_DURATION_MS = 10000;  // 10s
+  const ROLL_INTERVAL_MS = 50;
 
-    const $ = (id) => document.getElementById(id);
-    const LS_KEY = "lottery_ticket_pool_v2_tannien2026";
+  const $ = (id) => document.getElementById(id);
+  const LS_KEY = "lottery_ticket_pool_v2_tannien2026";
 
-    const pad6 = (s) => String(s).replace(/\D/g,"").slice(0,6).padStart(6,"0");
+  const pad6 = (s) => String(s).replace(/\D/g,"").slice(0,6).padStart(6,"0");
 
-    // ===== MUSIC =====
-    const SPIN_TRACKS = ["music1.mp3", "music2.mp3", "music3.mp3"];
-    let lastSpinTrack = null;
+  // ===== MUSIC =====
+  const SPIN_TRACKS = ["music1.mp3", "music2.mp3", "music3.mp3"];
+  let lastSpinTrack = null;
 
-    function pickRandomTrack(tracks, avoid){
-      const list = tracks.filter(x => x !== avoid);
-      const pool = list.length ? list : tracks;
-      return pool[Math.floor(Math.random() * pool.length)];
-    }
+  function pickRandomTrack(tracks, avoid){
+    const list = tracks.filter(x => x !== avoid);
+    const pool = list.length ? list : tracks;
+    return pool[Math.floor(Math.random() * pool.length)];
+  }
 
-    const nowStr = () => {
-      const d = new Date();
-      const p = (n)=> String(n).padStart(2,"0");
-      return `${p(d.getHours())}:${p(d.getMinutes())} ${p(d.getDate())}/${p(d.getMonth()+1)}/${d.getFullYear()}`;
+  // ===== WARMUP / PRELOAD MUSIC để giảm trễ =====
+  // Lưu ý: CHỈ warmup sau user gesture (click/keydown), tuyệt đối không gọi lúc load page
+  let musicWarmed = false;
+
+  function warmupSpinMusic(){
+    if(musicWarmed) return;
+    const a = $("spinMusic");
+    if(!a) return;
+
+    a.preload = "auto";
+
+    // set 1 track mặc định để nó bắt đầu tải sớm
+    const t0 = SPIN_TRACKS[0];
+    if(a.src !== t0) a.src = t0;
+    a.load();
+
+    const prime = () => {
+      if(musicWarmed) return;
+
+      // Prime decode: play cực ngắn rồi pause (chỉ chạy được sau gesture)
+      a.muted = true;
+      a.volume = 0;
+      a.loop = false;
+
+      a.play().then(() => {
+        setTimeout(() => {
+          a.pause();
+          a.currentTime = 0;
+          a.muted = false;
+          a.loop = true;
+          musicWarmed = true;
+        }, 120);
+      }).catch(() => {
+        // Nếu vẫn bị chặn, ít nhất file đã được fetch
+        musicWarmed = true;
+        a.muted = false;
+        a.loop = true;
+      });
     };
 
-    function escapeHtml(s){
-      return String(s).replace(/[&<>"']/g, c => ({
-        "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"
-      }[c]));
+    // Nếu chưa canplay thì đợi
+    if(a.readyState >= 2) prime();
+    else a.oncanplay = prime;
+  }
+
+  const nowStr = () => {
+    const d = new Date();
+    const p = (n)=> String(n).padStart(2,"0");
+    return `${p(d.getHours())}:${p(d.getMinutes())} ${p(d.getDate())}/${p(d.getMonth()+1)}/${d.getFullYear()}`;
+  };
+
+  function escapeHtml(s){
+    return String(s).replace(/[&<>"']/g, c => ({
+      "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"
+    }[c]));
+  }
+
+  function parseTickets(text){
+    const lines = text.split(/\r?\n/).map(x=>x.trim()).filter(Boolean);
+    const out = [];
+    for(const line of lines){
+      const code = pad6(line);
+      if(code) out.push(code);
     }
+    const seen = new Set();
+    return out.filter(c=>{
+      if(seen.has(c)) return false;
+      seen.add(c);
+      return true;
+    });
+  }
 
-    function parseTickets(text){
-      const lines = text.split(/\r?\n/).map(x=>x.trim()).filter(Boolean);
-      const out = [];
-      for(const line of lines){
-        const code = pad6(line);
-        if(code) out.push(code);
-      }
-      const seen = new Set();
-      return out.filter(c=>{
-        if(seen.has(c)) return false;
-        seen.add(c);
-        return true;
-      });
+  function pickRandom(arr){ return arr[Math.floor(Math.random()*arr.length)]; }
+  function prizeLabel(key){ return key === "G1" ? "Giải nhất" : (key === "G2" ? "Giải nhì" : "Giải ba"); }
+
+  function setDigitsFromStr(str6){
+    const digitEls = $("digits").children;
+    for(let i=0;i<6;i++) digitEls[i].textContent = str6[i] ?? "0";
+  }
+
+  function setLockedClasses(lockedMask){
+    const digitEls = $("digits").children;
+    for(let i=0;i<6;i++){
+      digitEls[i].classList.toggle("locked", lockedMask[i] === true);
     }
+  }
 
-    function pickRandom(arr){ return arr[Math.floor(Math.random()*arr.length)]; }
-    function prizeLabel(key){ return key === "G1" ? "Giải nhất" : (key === "G2" ? "Giải nhì" : "Giải ba"); }
+  function setSpinMusicVolume(v){
+    const a = $("spinMusic");
+    if(!a) return;
+    a.volume = Math.max(0, Math.min(1, v));
+  }
 
-    function setDigitsFromStr(str6){
-      const digitEls = $("digits").children;
-      for(let i=0;i<6;i++) digitEls[i].textContent = str6[i] ?? "0";
-    }
+  // bản chắc kèo: đổi bài + đợi canplay + fallback nếu lỗi file
+  function playSpinMusic(){
+    const on = $("musicOn") ? $("musicOn").checked : true;
+    if(!on) return;
 
-    function setLockedClasses(lockedMask){
-      const digitEls = $("digits").children;
-      for(let i=0;i<6;i++){
-        digitEls[i].classList.toggle("locked", lockedMask[i] === true);
-      }
-    }
+    const a = $("spinMusic");
+    if(!a) return;
 
-    function setSpinMusicVolume(v){
-      const a = $("spinMusic");
-      if(!a) return;
-      a.volume = Math.max(0, Math.min(1, v));
-    }
+    a.pause();
+    a.currentTime = 0;
 
-    function playSpinMusic(){
-      const on = $("musicOn") ? $("musicOn").checked : true;
-      if(!on) return;
+    let tries = 0;
 
-      const a = $("spinMusic");
-      if(!a) return;
+    const attempt = (avoidTrack) => {
+      const track = pickRandomTrack(SPIN_TRACKS, avoidTrack);
+      lastSpinTrack = track;
 
-      a.pause();
-      a.currentTime = 0;
+      a.src = track;
+      a.load();
+      setSpinMusicVolume(0.65);
 
-      let tries = 0;
+      const doPlay = () => {
+        a.oncanplay = null;
+        a.oncanplaythrough = null;
+        a.onerror = null;
+        a.currentTime = 0;
+        a.play().catch(()=>{});
+      };
 
-      const attempt = (avoidTrack) => {
-        const track = pickRandomTrack(SPIN_TRACKS, avoidTrack);
-        lastSpinTrack = track;
-
-        a.src = track;
-        a.load();
-        setSpinMusicVolume(0.65);
-
-        const doPlay = () => {
-          a.oncanplay = null;
-          a.oncanplaythrough = null;
-          a.onerror = null;
-          a.currentTime = 0;
-          a.play().catch(()=>{});
-        };
-
-        a.onerror = () => {
-          tries++;
-          if(tries < Math.min(3, SPIN_TRACKS.length)){
-            attempt(track);
-          }
-        };
-
-        if(a.readyState >= 3) doPlay();
-        else{
-          a.oncanplay = doPlay;
-          a.oncanplaythrough = doPlay;
+      a.onerror = () => {
+        tries++;
+        if(tries < Math.min(3, SPIN_TRACKS.length)){
+          attempt(track);
         }
       };
 
-      attempt(lastSpinTrack);
-    }
-
-    function lowerSpinMusicAfterWin(){
-      const on = $("musicOn") ? $("musicOn").checked : true;
-      if(!on) return;
-      setSpinMusicVolume(0.10); // nhỏ lại sau khi modal hiện
-    }
-
-    function stopSpinMusic(){
-      const a = $("spinMusic");
-      if(!a) return;
-      a.pause();
-      a.currentTime = 0;
-    }
-
-    function playWinSfx(){
-      const a = $("winSfx");
-      if(!a) return;
-      a.volume = 0.9;
-      a.currentTime = 0;
-      a.play().catch(()=>{});
-    }
-
-    // ===== THỨ TỰ QUA GIẢI (không ảnh hưởng bảng winners) =====
-    function getPrizeOrderFromStart(startKey){
-      if(startKey === "G1") return ["G1","G2","G3"];
-      if(startKey === "G3") return ["G3","G2","G1"];
-      return ["G2","G1","G3"];
-    }
-    function getCurrentPrizeOrder(){
-      return (state.prizeOrder && state.prizeOrder.length) ? state.prizeOrder : getPrizeOrderFromStart($("prizeSelect").value);
-    }
-
-    const state = {
-      pool: [],
-      totalLoaded: 0,
-      winners: [],
-      spinning: false,
-      rollTimer: null,
-      previewTicket: "000000",
-      finalTicket: null,
-      lockedMask: [false,false,false,false,false,false],
-      stopTimeouts: [],
-      cancelRequested: false,
-
-      prizeOrder: null,
-      prizeStartKey: null,
+      // readyState >= 2 là đủ để play
+      if(a.readyState >= 2) doPlay();
+      else{
+        a.oncanplay = doPlay;
+        a.oncanplaythrough = doPlay;
+      }
     };
 
-    // ===== LOCK QUAY KHI ĐỦ 3 GIẢI =====
-    function hasAll3Prizes(){
-      const got = new Set(state.winners.map(w => w.prizeKey));
-      return got.has("G1") && got.has("G2") && got.has("G3");
+    attempt(lastSpinTrack);
+  }
+
+  function lowerSpinMusicAfterWin(){
+    const on = $("musicOn") ? $("musicOn").checked : true;
+    if(!on) return;
+    setSpinMusicVolume(0.10); // nhỏ lại sau khi modal hiện
+  }
+
+  function stopSpinMusic(){
+    const a = $("spinMusic");
+    if(!a) return;
+    a.pause();
+    a.currentTime = 0;
+  }
+
+  function playWinSfx(){
+    const a = $("winSfx");
+    if(!a) return;
+    a.volume = 0.9;
+    a.currentTime = 0;
+    a.play().catch(()=>{});
+  }
+
+  // ===== THỨ TỰ QUA GIẢI (không ảnh hưởng bảng winners) =====
+  function getPrizeOrderFromStart(startKey){
+    if(startKey === "G1") return ["G1","G2","G3"];
+    if(startKey === "G3") return ["G3","G2","G1"];
+    return ["G2","G1","G3"];
+  }
+  function getCurrentPrizeOrder(){
+    return (state.prizeOrder && state.prizeOrder.length) ? state.prizeOrder : getPrizeOrderFromStart($("prizeSelect").value);
+  }
+
+  const state = {
+    pool: [],
+    totalLoaded: 0,
+    winners: [],
+    spinning: false,
+    rollTimer: null,
+    previewTicket: "000000",
+    finalTicket: null,
+    lockedMask: [false,false,false,false,false,false],
+    stopTimeouts: [],
+    cancelRequested: false,
+
+    prizeOrder: null,
+    prizeStartKey: null,
+  };
+
+  // ===== LOCK QUAY KHI ĐỦ 3 GIẢI =====
+  function hasAll3Prizes(){
+    const got = new Set(state.winners.map(w => w.prizeKey));
+    return got.has("G1") && got.has("G2") && got.has("G3");
+  }
+  function updateSpinLock(){
+    const lock = hasAll3Prizes();
+    $("btnSpin").disabled = lock || state.pool.length === 0 || state.spinning;
+  }
+
+  function save(){
+    localStorage.setItem(LS_KEY, JSON.stringify({
+      pool: state.pool,
+      totalLoaded: state.totalLoaded,
+      winners: state.winners
+    }));
+  }
+  function load(){
+    const raw = localStorage.getItem(LS_KEY);
+    if(!raw) return;
+    try{
+      const s = JSON.parse(raw);
+      state.pool = Array.isArray(s.pool) ? s.pool : [];
+      state.totalLoaded = Number.isFinite(s.totalLoaded) ? s.totalLoaded : state.pool.length;
+      state.winners = Array.isArray(s.winners) ? s.winners : [];
+    }catch(e){}
+  }
+
+  function renderPool(){
+    $("statTotal").textContent = state.totalLoaded;
+    $("statRemain").textContent = state.pool.length;
+    $("statRemain2").textContent = state.pool.length;
+
+    const wrap = $("poolList");
+    wrap.innerHTML = "";
+    if(state.pool.length === 0){
+      wrap.innerHTML = `<div class="empty">Danh sách quay trống. Nhập vé và bấm LƯU.</div>`;
+      return;
     }
-    function updateSpinLock(){
-      const lock = hasAll3Prizes();
-      $("btnSpin").disabled = lock || state.pool.length === 0 || state.spinning;
-      // nếu muốn khóa luôn dropdown khi đủ 3 giải thì mở dòng dưới:
-      // $("prizeSelect").disabled = lock || state.spinning;
-    }
-
-    function save(){
-      localStorage.setItem(LS_KEY, JSON.stringify({
-        pool: state.pool,
-        totalLoaded: state.totalLoaded,
-        winners: state.winners
-      }));
-    }
-    function load(){
-      const raw = localStorage.getItem(LS_KEY);
-      if(!raw) return;
-      try{
-        const s = JSON.parse(raw);
-        state.pool = Array.isArray(s.pool) ? s.pool : [];
-        state.totalLoaded = Number.isFinite(s.totalLoaded) ? s.totalLoaded : state.pool.length;
-        state.winners = Array.isArray(s.winners) ? s.winners : [];
-      }catch(e){}
-    }
-
-    function renderPool(){
-      $("statTotal").textContent = state.totalLoaded;
-      $("statRemain").textContent = state.pool.length;
-      $("statRemain2").textContent = state.pool.length;
-
-      const wrap = $("poolList");
-      wrap.innerHTML = "";
-      if(state.pool.length === 0){
-        wrap.innerHTML = `<div class="empty">Danh sách quay trống. Nhập vé và bấm LƯU.</div>`;
-        return;
-      }
-      state.pool.slice(0, 400).forEach(t=>{
-        const div = document.createElement("div");
-        div.className = "item";
-        div.innerHTML = `<div><strong style="font-family:var(--mono); font-size:14px">${escapeHtml(t)}</strong></div>
-                         <div class="tag">${escapeHtml(t)}</div>`;
-        wrap.appendChild(div);
-      });
-      if(state.pool.length > 400){
-        const more = document.createElement("div");
-        more.className="empty";
-        more.textContent = `... và còn ${state.pool.length - 400} vé nữa (đã ẩn để mượt).`;
-        wrap.appendChild(more);
-      }
-    }
-
-    function renderWinners(){
-      const tb = $("winnerTbody");
-      tb.innerHTML = "";
-      $("winnerEmpty").style.display = state.winners.length ? "none" : "block";
-
-      const prizeRank = { G1: 1, G2: 2, G3: 3 };
-      const list = state.winners
-        .map((w, idx) => ({ ...w, __idx: idx }))
-        .sort((a, b) => {
-          const ra = prizeRank[a.prizeKey] ?? 99;
-          const rb = prizeRank[b.prizeKey] ?? 99;
-          if(ra !== rb) return ra - rb;
-          return b.__idx - a.__idx;
-        });
-
-      list.forEach((w)=>{
-        const tr = document.createElement("tr");
-        tr.innerHTML = `
-          <td>${escapeHtml(w.prizeName)}</td>
-          <td><span class="ticketCell">${escapeHtml(w.ticket)}</span></td>
-          <td style="color:rgba(255,255,255,.80)">${escapeHtml(w.time)}</td>
-          <td style="text-align:right">
-            <button class="btn danger small" data-del="${w.__idx}">XÓA</button>
-          </td>
-        `;
-        tb.appendChild(tr);
-      });
-
-      tb.querySelectorAll("button[data-del]").forEach(btn=>{
-        btn.addEventListener("click", ()=>{
-          const idx = parseInt(btn.getAttribute("data-del"), 10);
-          deleteWinner(idx);
-        });
-      });
-
-      updateSpinLock();
-    }
-
-    function openModal(prizeKey, ticket, time){
-      $("modalTitle").textContent = `🎉 Chúc mừng ${prizeLabel(prizeKey)}!`;
-      $("modalSub").textContent = "Tiệc Tân Niên 2026";
-      $("modalTicket").textContent = ticket;
-      $("modalTime").textContent = time;
-      $("modalBack").style.display = "flex";
-    }
-    function closeModal(){ $("modalBack").style.display = "none"; }
-
-    function saveTicketsFromTextarea(){
-      if(state.spinning) return;
-
-      const tickets = parseTickets($("inputTickets").value);
-      const wonSet = new Set(state.winners.map(w=>w.ticket));
-      state.pool = tickets.filter(t => !wonSet.has(t));
-      state.totalLoaded = tickets.length;
-
-      save();
-      renderPool();
-      renderWinners();
-      resetDigitsUI();
-      updateSpinLock();
-    }
-
-    function resetDigitsUI(){
-      state.lockedMask = [false,false,false,false,false,false];
-      setLockedClasses(state.lockedMask);
-      setDigitsFromStr("000000");
-    }
-
-    function clearStopTimeouts(){
-      state.stopTimeouts.forEach(t => clearTimeout(t));
-      state.stopTimeouts = [];
-    }
-
-    function startSpinAutoStop(){
-      if(state.spinning) return;
-
-      // khóa quay khi đã đủ 3 giải
-      if(hasAll3Prizes()){
-        alert("Đã đủ 3 giải (Nhất/Nhì/Ba). Muốn quay lại thì XÓA kết quả giải đó trong bảng hoặc RESET.");
-        updateSpinLock();
-        return;
-      }
-
-      if(state.pool.length === 0){
-        alert("Danh sách quay đang trống. Nhập vé và bấm LƯU trước.");
-        return;
-      }
-
-      const finalTicket = pickRandom(state.pool);
-      state.finalTicket = finalTicket;
-
-      state.cancelRequested = false;
-      state.spinning = true;
-
-      $("btnSpin").disabled = true;
-      $("btnCancel").disabled = false;
-      $("prizeSelect").disabled = true;
-      $("btnSave").disabled = true;
-      $("btnDemo").disabled = true;
-
-      // chốt thứ tự qua giải theo option đang chọn
-      state.prizeStartKey = $("prizeSelect").value;
-      state.prizeOrder = getPrizeOrderFromStart(state.prizeStartKey);
-
-      playSpinMusic();
-
-      // khi quay: không lock từng số
-      state.lockedMask = [false,false,false,false,false,false];
-      setLockedClasses(state.lockedMask);
-
-      // random 6 số liên tục
-      state.rollTimer = setInterval(()=>{
-        if(state.cancelRequested) return;
-        let s = "";
-        for(let i=0;i<6;i++) s += String(Math.floor(Math.random()*10));
-        state.previewTicket = s;
-        setDigitsFromStr(s);
-      }, ROLL_INTERVAL_MS);
-
-      // sau 10s: nổ 6 số 1 lần
-      clearStopTimeouts();
-      const t = setTimeout(()=>{
-        if(state.cancelRequested) return;
-
-        state.previewTicket = finalTicket;
-        setDigitsFromStr(finalTicket);
-
-        // highlight cả 6 ô
-        state.lockedMask = [true,true,true,true,true,true];
-        setLockedClasses(state.lockedMask);
-
-        finalizeRound();
-      }, SPIN_DURATION_MS);
-
-      state.stopTimeouts.push(t);
-    }
-
-    function finalizeRound(){
-      if(state.cancelRequested) return;
-
-      clearInterval(state.rollTimer);
-      state.rollTimer = null;
-      clearStopTimeouts();
-
-      // ra số trúng: giảm volume nhỏ lại
-      lowerSpinMusicAfterWin();
-
-      const key = $("prizeSelect").value;
-      const time = nowStr();
-      const ticket = state.finalTicket;
-
-      state.pool = state.pool.filter(t => t !== ticket);
-
-      state.winners.push({
-        prizeKey: key,
-        prizeName: prizeLabel(key),
-        ticket,
-        time
-      });
-
-      save();
-      renderPool();
-      renderWinners();
-
-      playWinSfx();
-      openModal(key, ticket, time);
-
-      state.spinning = false;
-      $("btnCancel").disabled = true;
-      updateSpinLock(); // cập nhật lock theo winners + pool
-    }
-
-    function cancelSpin(){
-      if(!state.spinning) return;
-      state.cancelRequested = true;
-
-      clearInterval(state.rollTimer);
-      state.rollTimer = null;
-      clearStopTimeouts();
-
-      stopSpinMusic();
-
-      state.spinning = false;
-      state.finalTicket = null;
-
-      state.prizeOrder = null;
-      state.prizeStartKey = null;
-
-      $("btnCancel").disabled = true;
-      $("prizeSelect").disabled = false;
-      $("btnSave").disabled = false;
-      $("btnDemo").disabled = false;
-
-      resetDigitsUI();
-      updateSpinLock();
-    }
-
-    function moveToNextPrize(){
-      const order = getCurrentPrizeOrder();
-      const cur = $("prizeSelect").value;
-      const idx = order.indexOf(cur);
-      const next = order[Math.min((idx < 0 ? 0 : idx + 1), order.length - 1)];
-      $("prizeSelect").value = next;
-    }
-
-    function onModalClose(){
-      stopSpinMusic();
-      closeModal();
-
-      $("prizeSelect").disabled = false;
-      $("btnSave").disabled = false;
-      $("btnDemo").disabled = false;
-
-      const order = getCurrentPrizeOrder();
-      const cur = $("prizeSelect").value;
-
-      if(cur !== order[order.length - 1]){
-        moveToNextPrize();
-      }else{
-        state.prizeOrder = null;
-        state.prizeStartKey = null;
-      }
-
-      $("btnCancel").disabled = true;
-      resetDigitsUI();
-      updateSpinLock();
-    }
-
-    function deleteWinner(idx){
-      if(state.spinning) return;
-
-      const w = state.winners[idx];
-      if(!w) return;
-      state.winners.splice(idx, 1);
-
-      if(!state.pool.includes(w.ticket)){
-        state.pool.push(w.ticket);
-        state.pool.sort();
-      }
-      save();
-      renderPool();
-      renderWinners();
-      updateSpinLock();
-    }
-
-    function resetAll(){
-      if(state.rollTimer) clearInterval(state.rollTimer);
-      clearStopTimeouts();
-      stopSpinMusic();
-
-      state.spinning = false;
-      state.cancelRequested = false;
-      state.finalTicket = null;
-      state.pool = [];
-      state.totalLoaded = 0;
-      state.winners = [];
-      localStorage.removeItem(LS_KEY);
-
-      state.prizeOrder = null;
-      state.prizeStartKey = null;
-
-      $("inputTickets").value = "";
-      $("btnCancel").disabled = true;
-      $("prizeSelect").disabled = false;
-      $("btnSave").disabled = false;
-      $("btnDemo").disabled = false;
-
-      resetDigitsUI();
-      renderPool();
-      renderWinners();
-      closeModal();
-      updateSpinLock();
-    }
-
-    function exportCSV(){
-      const rows = [["time","prize","ticket"]];
-      state.winners.forEach(w=> rows.push([w.time, w.prizeName, w.ticket]));
-      const csv = rows.map(r => r.map(v => `"${String(v).replace(/"/g,'""')}"`).join(",")).join("\n");
-      const blob = new Blob([csv], {type:"text/csv;charset=utf-8"});
-      const a = document.createElement("a");
-      a.href = URL.createObjectURL(blob);
-      a.download = `ket-qua-tan-nien-2026-${new Date().toISOString().slice(0,10)}.csv`;
-      a.click();
-      URL.revokeObjectURL(a.href);
-    }
-
-    $("btnSave").addEventListener("click", saveTicketsFromTextarea);
-    $("btnSpin").addEventListener("click", startSpinAutoStop);
-    $("btnCancel").addEventListener("click", cancelSpin);
-
-    $("btnReset").addEventListener("click", ()=>{
-      if(confirm("Reset sẽ xóa danh sách vé + kết quả trúng. Tiếp tục?")) resetAll();
+    state.pool.slice(0, 400).forEach(t=>{
+      const div = document.createElement("div");
+      div.className = "item";
+      div.innerHTML = `<div><strong style="font-family:var(--mono); font-size:14px">${escapeHtml(t)}</strong></div>
+                       <div class="tag">${escapeHtml(t)}</div>`;
+      wrap.appendChild(div);
     });
-    $("btnExport").addEventListener("click", exportCSV);
+    if(state.pool.length > 400){
+      const more = document.createElement("div");
+      more.className="empty";
+      more.textContent = `... và còn ${state.pool.length - 400} vé nữa (đã ẩn để mượt).`;
+      wrap.appendChild(more);
+    }
+  }
 
-    $("btnDemo").addEventListener("click", ()=>{
-      $("inputTickets").value = [
-        "095686","857075","291806","995146","945792",
-        "247182","736667","903610","447169","391806",
-        "907081","984763","783707","641214","750831",
-        "342997","000574","064845","067282","240114",
-        "449290","372021","525716","560046","360624",
-        "199682","091007","002649","265010","178228"
-      ].join("\n");
+  function renderWinners(){
+    const tb = $("winnerTbody");
+    tb.innerHTML = "";
+    $("winnerEmpty").style.display = state.winners.length ? "none" : "block";
+
+    const prizeRank = { G1: 1, G2: 2, G3: 3 };
+    const list = state.winners
+      .map((w, idx) => ({ ...w, __idx: idx }))
+      .sort((a, b) => {
+        const ra = prizeRank[a.prizeKey] ?? 99;
+        const rb = prizeRank[b.prizeKey] ?? 99;
+        if(ra !== rb) return ra - rb;
+        return b.__idx - a.__idx;
+      });
+
+    list.forEach((w)=>{
+      const tr = document.createElement("tr");
+      tr.innerHTML = `
+        <td>${escapeHtml(w.prizeName)}</td>
+        <td><span class="ticketCell">${escapeHtml(w.ticket)}</span></td>
+        <td style="color:rgba(255,255,255,.80)">${escapeHtml(w.time)}</td>
+        <td style="text-align:right">
+          <button class="btn danger small" data-del="${w.__idx}">XÓA</button>
+        </td>
+      `;
+      tb.appendChild(tr);
     });
 
-    $("modalClose").addEventListener("click", onModalClose);
-
-    window.addEventListener("keydown", (e)=>{
-      if(e.code === "Space"){
-        e.preventDefault();
-        // Space cũng bị lock khi đủ 3 giải vì startSpinAutoStop() có check
-        if(!state.spinning && $("modalBack").style.display !== "flex"){
-          startSpinAutoStop();
-        }
-      }
-      if(e.key === "Escape"){
-        if(state.spinning) cancelSpin();
-        if($("modalBack").style.display === "flex") onModalClose();
-      }
+    tb.querySelectorAll("button[data-del]").forEach(btn=>{
+      btn.addEventListener("click", ()=>{
+        const idx = parseInt(btn.getAttribute("data-del"), 10);
+        deleteWinner(idx);
+      });
     });
 
-    load();
+    updateSpinLock();
+  }
+
+  function openModal(prizeKey, ticket, time){
+    $("modalTitle").textContent = `🎉 Chúc mừng ${prizeLabel(prizeKey)}!`;
+    $("modalSub").textContent = "Tiệc Tân Niên 2026";
+    $("modalTicket").textContent = ticket;
+    $("modalTime").textContent = time;
+    $("modalBack").style.display = "flex";
+  }
+  function closeModal(){ $("modalBack").style.display = "none"; }
+
+  function saveTicketsFromTextarea(){
+    if(state.spinning) return;
+
+    const tickets = parseTickets($("inputTickets").value);
+    const wonSet = new Set(state.winners.map(w=>w.ticket));
+    state.pool = tickets.filter(t => !wonSet.has(t));
+    state.totalLoaded = tickets.length;
+
+    save();
     renderPool();
     renderWinners();
     resetDigitsUI();
     updateSpinLock();
-  </script>
+  }
+
+  function resetDigitsUI(){
+    state.lockedMask = [false,false,false,false,false,false];
+    setLockedClasses(state.lockedMask);
+    setDigitsFromStr("000000");
+  }
+
+  function clearStopTimeouts(){
+    state.stopTimeouts.forEach(t => clearTimeout(t));
+    state.stopTimeouts = [];
+  }
+
+  function startSpinAutoStop(){
+    if(state.spinning) return;
+
+    if(hasAll3Prizes()){
+      alert("Đã đủ 3 giải (Nhất/Nhì/Ba). Muốn quay lại thì XÓA kết quả giải đó trong bảng hoặc RESET.");
+      updateSpinLock();
+      return;
+    }
+
+    if(state.pool.length === 0){
+      alert("Danh sách quay đang trống. Nhập vé và bấm LƯU trước.");
+      return;
+    }
+
+    const finalTicket = pickRandom(state.pool);
+    state.finalTicket = finalTicket;
+
+    state.cancelRequested = false;
+    state.spinning = true;
+
+    $("btnSpin").disabled = true;
+    $("btnCancel").disabled = false;
+    $("prizeSelect").disabled = true;
+    $("btnSave").disabled = true;
+    $("btnDemo").disabled = true;
+
+    state.prizeStartKey = $("prizeSelect").value;
+    state.prizeOrder = getPrizeOrderFromStart(state.prizeStartKey);
+
+    // warmup + play (warmup đã được gọi ở click handler, nhưng gọi thêm cũng không sao)
+    warmupSpinMusic();
+    playSpinMusic();
+
+    state.lockedMask = [false,false,false,false,false,false];
+    setLockedClasses(state.lockedMask);
+
+    state.rollTimer = setInterval(()=>{
+      if(state.cancelRequested) return;
+      let s = "";
+      for(let i=0;i<6;i++) s += String(Math.floor(Math.random()*10));
+      state.previewTicket = s;
+      setDigitsFromStr(s);
+    }, ROLL_INTERVAL_MS);
+
+    clearStopTimeouts();
+    const t = setTimeout(()=>{
+      if(state.cancelRequested) return;
+
+      state.previewTicket = finalTicket;
+      setDigitsFromStr(finalTicket);
+
+      state.lockedMask = [true,true,true,true,true,true];
+      setLockedClasses(state.lockedMask);
+
+      finalizeRound();
+    }, SPIN_DURATION_MS);
+
+    state.stopTimeouts.push(t);
+  }
+
+  function finalizeRound(){
+    if(state.cancelRequested) return;
+
+    clearInterval(state.rollTimer);
+    state.rollTimer = null;
+    clearStopTimeouts();
+
+    lowerSpinMusicAfterWin();
+
+    const key = $("prizeSelect").value;
+    const time = nowStr();
+    const ticket = state.finalTicket;
+
+    state.pool = state.pool.filter(t => t !== ticket);
+
+    state.winners.push({
+      prizeKey: key,
+      prizeName: prizeLabel(key),
+      ticket,
+      time
+    });
+
+    save();
+    renderPool();
+    renderWinners();
+
+    playWinSfx();
+    openModal(key, ticket, time);
+
+    state.spinning = false;
+    $("btnCancel").disabled = true;
+    updateSpinLock();
+  }
+
+  function cancelSpin(){
+    if(!state.spinning) return;
+    state.cancelRequested = true;
+
+    clearInterval(state.rollTimer);
+    state.rollTimer = null;
+    clearStopTimeouts();
+
+    stopSpinMusic();
+
+    state.spinning = false;
+    state.finalTicket = null;
+
+    state.prizeOrder = null;
+    state.prizeStartKey = null;
+
+    $("btnCancel").disabled = true;
+    $("prizeSelect").disabled = false;
+    $("btnSave").disabled = false;
+    $("btnDemo").disabled = false;
+
+    resetDigitsUI();
+    updateSpinLock();
+  }
+
+  function moveToNextPrize(){
+    const order = getCurrentPrizeOrder();
+    const cur = $("prizeSelect").value;
+    const idx = order.indexOf(cur);
+    const next = order[Math.min((idx < 0 ? 0 : idx + 1), order.length - 1)];
+    $("prizeSelect").value = next;
+  }
+
+  function onModalClose(){
+    stopSpinMusic();
+    closeModal();
+
+    $("prizeSelect").disabled = false;
+    $("btnSave").disabled = false;
+    $("btnDemo").disabled = false;
+
+    const order = getCurrentPrizeOrder();
+    const cur = $("prizeSelect").value;
+
+    if(cur !== order[order.length - 1]){
+      moveToNextPrize();
+    }else{
+      state.prizeOrder = null;
+      state.prizeStartKey = null;
+    }
+
+    $("btnCancel").disabled = true;
+    resetDigitsUI();
+    updateSpinLock();
+  }
+
+  function deleteWinner(idx){
+    if(state.spinning) return;
+
+    const w = state.winners[idx];
+    if(!w) return;
+    state.winners.splice(idx, 1);
+
+    if(!state.pool.includes(w.ticket)){
+      state.pool.push(w.ticket);
+      state.pool.sort();
+    }
+    save();
+    renderPool();
+    renderWinners();
+    updateSpinLock();
+  }
+
+  function resetAll(){
+    if(state.rollTimer) clearInterval(state.rollTimer);
+    clearStopTimeouts();
+    stopSpinMusic();
+
+    state.spinning = false;
+    state.cancelRequested = false;
+    state.finalTicket = null;
+    state.pool = [];
+    state.totalLoaded = 0;
+    state.winners = [];
+    localStorage.removeItem(LS_KEY);
+
+    state.prizeOrder = null;
+    state.prizeStartKey = null;
+
+    $("inputTickets").value = "";
+    $("btnCancel").disabled = true;
+    $("prizeSelect").disabled = false;
+    $("btnSave").disabled = false;
+    $("btnDemo").disabled = false;
+
+    resetDigitsUI();
+    renderPool();
+    renderWinners();
+    closeModal();
+    updateSpinLock();
+  }
+
+  function exportCSV(){
+    const rows = [["time","prize","ticket"]];
+    state.winners.forEach(w=> rows.push([w.time, w.prizeName, w.ticket]));
+    const csv = rows.map(r => r.map(v => `"${String(v).replace(/"/g,'""')}"`).join(",")).join("\n");
+    const blob = new Blob([csv], {type:"text/csv;charset=utf-8"});
+    const a = document.createElement("a");
+    a.href = URL.createObjectURL(blob);
+    a.download = `ket-qua-tan-nien-2026-${new Date().toISOString().slice(0,10)}.csv`;
+    a.click();
+    URL.revokeObjectURL(a.href);
+  }
+
+  // ===== EVENT: GỌI warmup SAU CLICK để “prime” decode =====
+  $("btnSave").addEventListener("click", ()=>{
+    warmupSpinMusic();
+    saveTicketsFromTextarea();
+  });
+
+  $("btnSpin").addEventListener("click", ()=>{
+    warmupSpinMusic();
+    startSpinAutoStop();
+  });
+
+  $("btnCancel").addEventListener("click", cancelSpin);
+
+  $("btnReset").addEventListener("click", ()=>{
+    if(confirm("Reset sẽ xóa danh sách vé + kết quả trúng. Tiếp tục?")) resetAll();
+  });
+
+  $("btnExport").addEventListener("click", exportCSV);
+
+  $("btnDemo").addEventListener("click", ()=>{
+    warmupSpinMusic();
+    $("inputTickets").value = [
+      "095686","857075","291806","995146","945792",
+      "247182","736667","903610","447169","391806",
+      "907081","984763","783707","641214","750831",
+      "342997","000574","064845","067282","240114",
+      "449290","372021","525716","560046","360624",
+      "199682","091007","002649","265010","178228"
+    ].join("\n");
+  });
+
+  $("modalClose").addEventListener("click", onModalClose);
+
+  window.addEventListener("keydown", (e)=>{
+    if(e.code === "Space"){
+      e.preventDefault();
+      // Space cũng là gesture => warmup rồi quay
+      if(!state.spinning && $("modalBack").style.display !== "flex"){
+        warmupSpinMusic();
+        startSpinAutoStop();
+      }
+    }
+    if(e.key === "Escape"){
+      if(state.spinning) cancelSpin();
+      if($("modalBack").style.display === "flex") onModalClose();
+    }
+  });
+
+  load();
+  renderPool();
+  renderWinners();
+  resetDigitsUI();
+  updateSpinLock();
+</script>
 </body>
 </html>

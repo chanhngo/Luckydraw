@@ -15,7 +15,7 @@
       --shadow:0 18px 60px rgba(0,0,0,.45);
       --mono: ui-monospace,SFMono-Regular,Menlo,Monaco,Consolas,monospace;
       --sans: ui-sans-serif,system-ui,-apple-system,"Segoe UI",Roboto,Helvetica,Arial;
-      --bg-image: url("bg.jpg"); /* đặt bg.jpg cùng thư mục */
+      --bg-image: url("bg.jpg");
     }
 
     *{box-sizing:border-box}
@@ -505,7 +505,7 @@ Ví dụ:
   <audio id="winSfx" src="win.mp3" preload="auto"></audio>
 
   <script>
-    // ===== CHỈ ĐỔI CƠ CHẾ QUAY: quay ~10s rồi nổ 6 số 1 lần =====
+    // ===== QUAY 10s, NỔ 6 SỐ 1 LẦN =====
     const SPIN_DURATION_MS = 10000;  // 10s
     const ROLL_INTERVAL_MS = 50;
 
@@ -514,6 +514,7 @@ Ví dụ:
 
     const pad6 = (s) => String(s).replace(/\D/g,"").slice(0,6).padStart(6,"0");
 
+    // ===== MUSIC =====
     const SPIN_TRACKS = ["music1.mp3", "music2.mp3", "music3.mp3"];
     let lastSpinTrack = null;
 
@@ -619,7 +620,7 @@ Ví dụ:
     function lowerSpinMusicAfterWin(){
       const on = $("musicOn") ? $("musicOn").checked : true;
       if(!on) return;
-      setSpinMusicVolume(0.10); // tự chỉnh nhỏ lại sau khi trúng
+      setSpinMusicVolume(0.10); // nhỏ lại sau khi modal hiện
     }
 
     function stopSpinMusic(){
@@ -637,7 +638,7 @@ Ví dụ:
       a.play().catch(()=>{});
     }
 
-    // ===== chỉ sửa cơ chế qua giải (không đụng bảng winners) =====
+    // ===== THỨ TỰ QUA GIẢI (không ảnh hưởng bảng winners) =====
     function getPrizeOrderFromStart(startKey){
       if(startKey === "G1") return ["G1","G2","G3"];
       if(startKey === "G3") return ["G3","G2","G1"];
@@ -662,6 +663,18 @@ Ví dụ:
       prizeOrder: null,
       prizeStartKey: null,
     };
+
+    // ===== LOCK QUAY KHI ĐỦ 3 GIẢI =====
+    function hasAll3Prizes(){
+      const got = new Set(state.winners.map(w => w.prizeKey));
+      return got.has("G1") && got.has("G2") && got.has("G3");
+    }
+    function updateSpinLock(){
+      const lock = hasAll3Prizes();
+      $("btnSpin").disabled = lock || state.pool.length === 0 || state.spinning;
+      // nếu muốn khóa luôn dropdown khi đủ 3 giải thì mở dòng dưới:
+      // $("prizeSelect").disabled = lock || state.spinning;
+    }
 
     function save(){
       localStorage.setItem(LS_KEY, JSON.stringify({
@@ -741,6 +754,8 @@ Ví dụ:
           deleteWinner(idx);
         });
       });
+
+      updateSpinLock();
     }
 
     function openModal(prizeKey, ticket, time){
@@ -764,7 +779,7 @@ Ví dụ:
       renderPool();
       renderWinners();
       resetDigitsUI();
-      $("btnSpin").disabled = state.pool.length === 0;
+      updateSpinLock();
     }
 
     function resetDigitsUI(){
@@ -778,9 +793,16 @@ Ví dụ:
       state.stopTimeouts = [];
     }
 
-    // ===== QUAY 10s, rồi NỔ 6 SỐ 1 LẦN =====
     function startSpinAutoStop(){
       if(state.spinning) return;
+
+      // khóa quay khi đã đủ 3 giải
+      if(hasAll3Prizes()){
+        alert("Đã đủ 3 giải (Nhất/Nhì/Ba). Muốn quay lại thì XÓA kết quả giải đó trong bảng hoặc RESET.");
+        updateSpinLock();
+        return;
+      }
+
       if(state.pool.length === 0){
         alert("Danh sách quay đang trống. Nhập vé và bấm LƯU trước.");
         return;
@@ -798,17 +820,17 @@ Ví dụ:
       $("btnSave").disabled = true;
       $("btnDemo").disabled = true;
 
-      // chốt thứ tự qua giải theo option đang chọn lúc bắt đầu quay
+      // chốt thứ tự qua giải theo option đang chọn
       state.prizeStartKey = $("prizeSelect").value;
       state.prizeOrder = getPrizeOrderFromStart(state.prizeStartKey);
 
       playSpinMusic();
 
-      // khi quay: không lock từng số nữa
+      // khi quay: không lock từng số
       state.lockedMask = [false,false,false,false,false,false];
       setLockedClasses(state.lockedMask);
 
-      // chạy random 6 số liên tục
+      // random 6 số liên tục
       state.rollTimer = setInterval(()=>{
         if(state.cancelRequested) return;
         let s = "";
@@ -817,16 +839,15 @@ Ví dụ:
         setDigitsFromStr(s);
       }, ROLL_INTERVAL_MS);
 
-      // sau 10s: nổ luôn 6 số (finalTicket) 1 lần
+      // sau 10s: nổ 6 số 1 lần
       clearStopTimeouts();
       const t = setTimeout(()=>{
         if(state.cancelRequested) return;
 
-        // show số trúng 1 lần (không lộ trước)
         state.previewTicket = finalTicket;
         setDigitsFromStr(finalTicket);
 
-        // nếu muốn highlight mạnh khi nổ: lock cả 6 ô cho sáng
+        // highlight cả 6 ô
         state.lockedMask = [true,true,true,true,true,true];
         setLockedClasses(state.lockedMask);
 
@@ -867,8 +888,8 @@ Ví dụ:
       openModal(key, ticket, time);
 
       state.spinning = false;
-      $("btnSpin").disabled = true;
       $("btnCancel").disabled = true;
+      updateSpinLock(); // cập nhật lock theo winners + pool
     }
 
     function cancelSpin(){
@@ -884,17 +905,16 @@ Ví dụ:
       state.spinning = false;
       state.finalTicket = null;
 
-      // hủy thì reset order để lần sau chọn lại tùy ý
       state.prizeOrder = null;
       state.prizeStartKey = null;
 
-      $("btnSpin").disabled = (state.pool.length === 0);
       $("btnCancel").disabled = true;
       $("prizeSelect").disabled = false;
       $("btnSave").disabled = false;
       $("btnDemo").disabled = false;
 
       resetDigitsUI();
+      updateSpinLock();
     }
 
     function moveToNextPrize(){
@@ -906,9 +926,7 @@ Ví dụ:
     }
 
     function onModalClose(){
-      // qua giải tiếp: dừng nhạc để lượt sau random bài khác
       stopSpinMusic();
-
       closeModal();
 
       $("prizeSelect").disabled = false;
@@ -925,9 +943,9 @@ Ví dụ:
         state.prizeStartKey = null;
       }
 
-      $("btnSpin").disabled = (state.pool.length === 0);
       $("btnCancel").disabled = true;
       resetDigitsUI();
+      updateSpinLock();
     }
 
     function deleteWinner(idx){
@@ -944,8 +962,7 @@ Ví dụ:
       save();
       renderPool();
       renderWinners();
-
-      if(state.pool.length > 0) $("btnSpin").disabled = false;
+      updateSpinLock();
     }
 
     function resetAll(){
@@ -965,7 +982,6 @@ Ví dụ:
       state.prizeStartKey = null;
 
       $("inputTickets").value = "";
-      $("btnSpin").disabled = false;
       $("btnCancel").disabled = true;
       $("prizeSelect").disabled = false;
       $("btnSave").disabled = false;
@@ -975,6 +991,7 @@ Ví dụ:
       renderPool();
       renderWinners();
       closeModal();
+      updateSpinLock();
     }
 
     function exportCSV(){
@@ -1014,6 +1031,7 @@ Ví dụ:
     window.addEventListener("keydown", (e)=>{
       if(e.code === "Space"){
         e.preventDefault();
+        // Space cũng bị lock khi đủ 3 giải vì startSpinAutoStop() có check
         if(!state.spinning && $("modalBack").style.display !== "flex"){
           startSpinAutoStop();
         }
@@ -1028,7 +1046,7 @@ Ví dụ:
     renderPool();
     renderWinners();
     resetDigitsUI();
-    $("btnSpin").disabled = state.pool.length === 0;
+    updateSpinLock();
   </script>
 </body>
 </html>

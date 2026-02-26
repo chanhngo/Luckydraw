@@ -15,7 +15,6 @@
       --shadow:0 18px 60px rgba(0,0,0,.45);
       --mono: ui-monospace,SFMono-Regular,Menlo,Monaco,Consolas,monospace;
       --sans: ui-sans-serif,system-ui,-apple-system,"Segoe UI",Roboto,Helvetica,Arial;
-
       --bg-image: url("bg.jpg"); /* đặt bg.jpg cùng thư mục */
     }
 
@@ -25,7 +24,6 @@
       font-family:var(--sans);
       color:var(--text);
       min-height:100vh;
-
       background:
         var(--bg-image) center top/cover no-repeat fixed,
         linear-gradient(180deg, rgba(0,0,0,.12), rgba(0,0,0,.55));
@@ -42,7 +40,6 @@
         linear-gradient(180deg, rgba(0,0,0,.06), rgba(0,0,0,.38));
     }
 
-    /* ===== VIỀN FULL MÀN ===== */
     .outerFrame{
       width:100%;
       border:2px solid rgba(255,216,107,.38);
@@ -53,10 +50,9 @@
       backdrop-filter: blur(2px);
     }
 
-    /* ===== NỘI DUNG CHO NỞ RỘNG HƠN (KHÔNG BÓ 1280) ===== */
     .frame{
       width:100%;
-      max-width:1680px;         /* muốn rộng hơn nữa thì tăng lên 1800/1920 */
+      max-width:1680px;
       margin:0 auto;
     }
 
@@ -78,7 +74,6 @@
       text-shadow:0 8px 25px rgba(0,0,0,.45);
     }
 
-    /* ===== GRID NỞ THEO MÀN ===== */
     .content{
       display:grid;
       grid-template-columns:
@@ -91,9 +86,7 @@
     }
 
     @media (max-width: 1200px){
-      .content{
-        grid-template-columns: 1fr;
-      }
+      .content{ grid-template-columns: 1fr; }
     }
 
     @media (max-width: 720px){
@@ -106,7 +99,6 @@
       .content{ padding:10px; }
     }
 
-    /* ===== CARD GLASS ===== */
     .card{
       border:1px solid rgba(255,255,255,.14);
       background:linear-gradient(180deg, rgba(255,255,255,.18), rgba(255,255,255,.07));
@@ -128,7 +120,6 @@
       display:flex; justify-content:space-between; align-items:center;
       gap:10px; flex-wrap:wrap; margin-bottom:8px;
     }
-
     .row{display:flex; gap:10px; align-items:center; flex-wrap:wrap}
 
     .btn{
@@ -165,7 +156,6 @@
       border-radius:14px;
       font-weight:900;
     }
-    /* nút nhỏ trong bảng */
     .btn.danger.small{
       padding:7px 9px;
       font-size:12px;
@@ -173,13 +163,11 @@
     }
     .btn:disabled{opacity:.45; cursor:not-allowed}
 
-    /* ===== CENTER SPIN ===== */
     .spinCard{
       position:relative;
       isolation:isolate;
       overflow:hidden;
     }
-
     .center{
       display:flex;
       flex-direction:column;
@@ -201,7 +189,6 @@
       backdrop-filter: blur(8px);
     }
 
-    /* ===== DIGITS RESPONSIVE ===== */
     .digits{
       display:flex;
       justify-content:center;
@@ -245,7 +232,6 @@
 
     .meta{ color:var(--muted); font-size:12px; text-align:center; font-family:var(--mono); }
 
-    /* ===== RIGHT INPUT ===== */
     textarea{
       width:100%;
       min-height:150px;
@@ -303,7 +289,6 @@
       color:rgba(255,255,255,.88);
     }
 
-    /* ===== TABLE WINNERS ===== */
     .tableWrap{
       margin-top:10px;
       overflow-x:auto;
@@ -312,7 +297,7 @@
 
     table{
       width:100%;
-      min-width:520px;  /* giảm chút cho gọn */
+      min-width:520px;
       border-collapse:separate;
       border-spacing:0 8px;
       font-size:13px;
@@ -352,14 +337,12 @@
     }
     .empty{padding:10px; color:var(--muted); font-size:12px}
 
-    /* custom độ rộng cột bằng colgroup */
     .winnerTable{ table-layout: fixed; width:100%; }
     .winnerTable .cPrize  { width: 90px; }
-    .winnerTable .cTicket { width: 90px; } /* 6 số đủ */
+    .winnerTable .cTicket { width: 90px; }
     .winnerTable .cTime   { width: 150px; }
     .winnerTable .cAction { width: 86px; }
 
-    /* vé trúng nhỏ gọn */
     .ticketCell{
       font-family:var(--mono);
       font-size:12px;
@@ -368,7 +351,6 @@
       letter-spacing:.5px;
     }
 
-    /* ===== MODAL ===== */
     .modalBack{
       position:fixed; inset:0;
       background:rgba(0,0,0,.55);
@@ -519,12 +501,12 @@ Ví dụ:
   </div>
 
   <!-- Audio -->
-  <!-- Đặt 3 file music1.mp3 music2.mp3 music3.mp3 cùng thư mục -->
   <audio id="spinMusic" preload="auto" loop></audio>
   <audio id="winSfx" src="win.mp3" preload="auto"></audio>
 
   <script>
-    const STOP_DELAY_MS = 5000;
+    // ===== CHỈ ĐỔI CƠ CHẾ QUAY: quay ~10s rồi nổ 6 số 1 lần =====
+    const SPIN_DURATION_MS = 10000;  // 10s
     const ROLL_INTERVAL_MS = 50;
 
     const $ = (id) => document.getElementById(id);
@@ -532,7 +514,6 @@ Ví dụ:
 
     const pad6 = (s) => String(s).replace(/\D/g,"").slice(0,6).padStart(6,"0");
 
-    // ===== SPIN MUSIC PLAYLIST =====
     const SPIN_TRACKS = ["music1.mp3", "music2.mp3", "music3.mp3"];
     let lastSpinTrack = null;
 
@@ -542,7 +523,6 @@ Ví dụ:
       return pool[Math.floor(Math.random() * pool.length)];
     }
 
-    // hh:mm dd/mm/yyyy
     const nowStr = () => {
       const d = new Date();
       const p = (n)=> String(n).padStart(2,"0");
@@ -591,7 +571,6 @@ Ví dụ:
       a.volume = Math.max(0, Math.min(1, v));
     }
 
-    // bản chắc kèo: đổi bài + đợi canplay + fallback nếu lỗi file
     function playSpinMusic(){
       const on = $("musicOn") ? $("musicOn").checked : true;
       if(!on) return;
@@ -640,7 +619,7 @@ Ví dụ:
     function lowerSpinMusicAfterWin(){
       const on = $("musicOn") ? $("musicOn").checked : true;
       if(!on) return;
-      setSpinMusicVolume(0.10); // tự chỉnh
+      setSpinMusicVolume(0.10); // tự chỉnh nhỏ lại sau khi trúng
     }
 
     function stopSpinMusic(){
@@ -658,11 +637,11 @@ Ví dụ:
       a.play().catch(()=>{});
     }
 
-    // ===== CHỈ SỬA CƠ CHẾ QUA GIẢI (KHÔNG ĐỤNG BẢNG WINNERS) =====
+    // ===== chỉ sửa cơ chế qua giải (không đụng bảng winners) =====
     function getPrizeOrderFromStart(startKey){
       if(startKey === "G1") return ["G1","G2","G3"];
       if(startKey === "G3") return ["G3","G2","G1"];
-      return ["G2","G1","G3"]; // nếu bắt đầu từ Giải nhì
+      return ["G2","G1","G3"];
     }
     function getCurrentPrizeOrder(){
       return (state.prizeOrder && state.prizeOrder.length) ? state.prizeOrder : getPrizeOrderFromStart($("prizeSelect").value);
@@ -680,7 +659,6 @@ Ví dụ:
       stopTimeouts: [],
       cancelRequested: false,
 
-      // NEW: order quay theo option chọn lúc bắt đầu
       prizeOrder: null,
       prizeStartKey: null,
     };
@@ -800,6 +778,7 @@ Ví dụ:
       state.stopTimeouts = [];
     }
 
+    // ===== QUAY 10s, rồi NỔ 6 SỐ 1 LẦN =====
     function startSpinAutoStop(){
       if(state.spinning) return;
       if(state.pool.length === 0){
@@ -819,47 +798,42 @@ Ví dụ:
       $("btnSave").disabled = true;
       $("btnDemo").disabled = true;
 
-      // NEW: chốt thứ tự qua giải theo option đang chọn lúc bắt đầu quay
+      // chốt thứ tự qua giải theo option đang chọn lúc bắt đầu quay
       state.prizeStartKey = $("prizeSelect").value;
       state.prizeOrder = getPrizeOrderFromStart(state.prizeStartKey);
 
       playSpinMusic();
 
+      // khi quay: không lock từng số nữa
       state.lockedMask = [false,false,false,false,false,false];
       setLockedClasses(state.lockedMask);
 
+      // chạy random 6 số liên tục
       state.rollTimer = setInterval(()=>{
         if(state.cancelRequested) return;
-
-        const current = [];
-        for(let i=0;i<6;i++){
-          if(state.lockedMask[i]) current.push(finalTicket[i]);
-          else current.push(String(Math.floor(Math.random()*10)));
-        }
-        state.previewTicket = current.join("");
-        setDigitsFromStr(state.previewTicket);
+        let s = "";
+        for(let i=0;i<6;i++) s += String(Math.floor(Math.random()*10));
+        state.previewTicket = s;
+        setDigitsFromStr(s);
       }, ROLL_INTERVAL_MS);
 
+      // sau 10s: nổ luôn 6 số (finalTicket) 1 lần
       clearStopTimeouts();
-      for(let step = 0; step < 6; step++){
-        const idx = 5 - step;
-        const t = setTimeout(()=>{
-          if(state.cancelRequested) return;
+      const t = setTimeout(()=>{
+        if(state.cancelRequested) return;
 
-          state.lockedMask[idx] = true;
-          setLockedClasses(state.lockedMask);
+        // show số trúng 1 lần (không lộ trước)
+        state.previewTicket = finalTicket;
+        setDigitsFromStr(finalTicket);
 
-          const forced = state.previewTicket.split("");
-          forced[idx] = finalTicket[idx];
-          state.previewTicket = forced.join("");
-          setDigitsFromStr(state.previewTicket);
+        // nếu muốn highlight mạnh khi nổ: lock cả 6 ô cho sáng
+        state.lockedMask = [true,true,true,true,true,true];
+        setLockedClasses(state.lockedMask);
 
-          if(idx === 0){
-            finalizeRound();
-          }
-        }, STOP_DELAY_MS * (step + 1));
-        state.stopTimeouts.push(t);
-      }
+        finalizeRound();
+      }, SPIN_DURATION_MS);
+
+      state.stopTimeouts.push(t);
     }
 
     function finalizeRound(){
@@ -869,7 +843,7 @@ Ví dụ:
       state.rollTimer = null;
       clearStopTimeouts();
 
-      // RA SỐ TRÚNG: KHÔNG TẮT NHẠC, CHỈ GIẢM VOLUME
+      // ra số trúng: giảm volume nhỏ lại
       lowerSpinMusicAfterWin();
 
       const key = $("prizeSelect").value;
@@ -910,7 +884,7 @@ Ví dụ:
       state.spinning = false;
       state.finalTicket = null;
 
-      // NEW: hủy thì reset order để lần sau chọn lại tùy ý
+      // hủy thì reset order để lần sau chọn lại tùy ý
       state.prizeOrder = null;
       state.prizeStartKey = null;
 
@@ -923,7 +897,6 @@ Ví dụ:
       resetDigitsUI();
     }
 
-    // NEW: qua giải theo thứ tự đã chốt (chỉ ảnh hưởng prizeSelect, không ảnh hưởng bảng winners)
     function moveToNextPrize(){
       const order = getCurrentPrizeOrder();
       const cur = $("prizeSelect").value;
@@ -933,7 +906,7 @@ Ví dụ:
     }
 
     function onModalClose(){
-      // ĐÓNG MODAL / QUA GIẢI TIẾP: DỪNG NHẠC để lần QUAY sau random bài khác
+      // qua giải tiếp: dừng nhạc để lượt sau random bài khác
       stopSpinMusic();
 
       closeModal();
@@ -948,7 +921,6 @@ Ví dụ:
       if(cur !== order[order.length - 1]){
         moveToNextPrize();
       }else{
-        // tới cuối chuỗi thì reset order, để lần sau chọn lại theo ý người điều khiển
         state.prizeOrder = null;
         state.prizeStartKey = null;
       }
@@ -989,7 +961,6 @@ Ví dụ:
       state.winners = [];
       localStorage.removeItem(LS_KEY);
 
-      // NEW: reset order
       state.prizeOrder = null;
       state.prizeStartKey = null;
 
